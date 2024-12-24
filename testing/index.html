@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Timer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="timer">30</div>
+    <div id="stopwatch">
+        <div id="stopwatchDisplay">00:00:00</div>
+        <div id="stopwatchControls">
+    <button id="startStopwatch">START</button>
+    <button id="resetStopwatch">RESET</button>
+    <button id="muteButton">MUTE</button>
+</div>
+
+    </div>
+    <input id="defaultTimeInput" type="number" min="1" placeholder="4">
+    <div id="volumeControl">
+        <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
+        <div id="muteIcon" class="unmuted"></div>
+    </div>
+    <div id="sideMenu">
+        <div class="menuTile addTile">+</div>
+        <div class="menuTile">
+            <div class="exerciseImage"></div>
+            Exercise 1
+        </div>
+        <div class="menuTile">
+            <div class="exerciseImage"></div>
+            Exercise 2
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
