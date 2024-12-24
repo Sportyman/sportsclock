@@ -125,32 +125,51 @@
             background-color: rgba(255, 255, 255, 0.2);
         }
 
-        #mobileMuteButton {
-            display: none;
+        #sideMenu {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #444;
+            right: -100%;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background-color: #222;
             color: white;
-            border-radius: 50%;
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            padding: 10px;
+        }
+
+        #sideMenu:hover {
+            right: 0;
+        }
+
+        .menuTile {
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            width: 100%;
+            height: 100px;
+            background-color: #333;
+            color: white;
+            margin-bottom: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            z-index: 10;
         }
 
-        #mobileMuteButton.muted {
-            background-color: #b00;
+        .menuTile:hover {
+            background-color: #444;
         }
 
-        @media (max-width: 768px) {
-            #mobileMuteButton {
-                display: flex;
-            }
+        .addTile {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .exerciseImage {
+            width: 80px;
+            height: 80px;
+            border-radius: 5px;
+            background-color: white;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -168,7 +187,18 @@
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
     </div>
-    <div id="mobileMuteButton" class="unmuted">🔇</div>
+    <div id="sideMenu">
+        <div class="menuTile addTile">+</div>
+        <div class="menuTile">
+            <div class="exerciseImage"></div>
+            Exercise 1
+        </div>
+        <div class="menuTile">
+            <div class="exerciseImage"></div>
+            Exercise 2
+        </div>
+        <!-- Additional tiles can be added dynamically -->
+    </div>
 
     <script>
         const timerElement = document.getElementById('timer');
@@ -176,43 +206,188 @@
         const volumeControl = document.getElementById('volumeControl');
         const volumeBar = document.getElementById('volumeBar');
         const muteIcon = document.getElementById('muteIcon');
-        const mobileMuteButton = document.getElementById('mobileMuteButton');
+        const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+        const startStopwatchButton = document.getElementById('startStopwatch');
+        const resetStopwatchButton = document.getElementById('resetStopwatch');
+        const sideMenu = document.getElementById('sideMenu');
 
+        let defaultTime = 4;
+        let count = defaultTime;
         let isMuted = false;
+        let volume = 1;
+        let isStealthMode = false;
 
-        // Toggle Mute Functionality
+        // Stopwatch variables
+        let stopwatchInterval;
+        let stopwatchRunning = false;
+        let stopwatchTime = 0;
+
+        function updateStopwatchDisplay() {
+            const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
+            const seconds = String(stopwatchTime % 60).padStart(2, '0');
+            stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        function startStopwatch() {
+            if (!stopwatchRunning) {
+                stopwatchInterval = setInterval(() => {
+                    stopwatchTime++;
+                    updateStopwatchDisplay();
+                }, 1000);
+                startStopwatchButton.textContent = 'PAUSE';
+                stopwatchRunning = true;
+            } else {
+                clearInterval(stopwatchInterval);
+                startStopwatchButton.textContent = 'START';
+                stopwatchRunning = false;
+            }
+        }
+
+        function resetStopwatch() {
+            clearInterval(stopwatchInterval);
+            stopwatchTime = 0;
+            updateStopwatchDisplay();
+            startStopwatchButton.textContent = 'START';
+            stopwatchRunning = false;
+        }
+
+        startStopwatchButton.addEventListener('click', startStopwatch);
+        resetStopwatchButton.addEventListener('click', resetStopwatch);
+
+        // Start the stopwatch on load
+        startStopwatch();
+
+        // Paths for sound directories
+        const halfSoundsDir = 'sounds/half/';
+        const endSoundsDir = 'sounds/end/';
+
+        // Array of sound files
+        const halfSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
+        const endSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
+
+        let lastHalfSoundIndex = -1;
+        let lastEndSoundIndex = -1;
+
+        function playRandomSound(soundArray, directory, lastSoundIndex) {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * soundArray.length);
+            } while (randomIndex === lastSoundIndex);
+
+            const audio = new Audio(`${directory}${soundArray[randomIndex]}`);
+            audio.volume = volume;
+            if (!isMuted) audio.play();
+            return randomIndex;
+        }
+
+        function updateTimer() {
+            timerElement.textContent = count;
+
+            // Update the tab title
+            document.title = isMuted ? '🔇' : `${count}`;
+
+            if (count <= Math.floor(defaultTime / 2)) {
+                document.body.style.backgroundColor = 'red';
+                if (count === Math.floor(defaultTime / 2)) { // Play sound only once when it first passes halfway
+                    lastHalfSoundIndex = playRandomSound(halfSounds, halfSoundsDir, lastHalfSoundIndex);
+                }
+            } else {
+                document.body.style.backgroundColor = 'black';
+            }
+
+            count--;
+
+            if (count < 0) {
+                lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex); // Play sound at the end of the timer
+                count = defaultTime; // Reset to default value
+                setTimeout(updateTimer, 3000); // Wait 3 seconds before restarting
+            } else {
+                setTimeout(updateTimer, 1000); // Update every second
+            }
+        }
+
+        defaultTimeInput.addEventListener('change', () => {
+            const newDefaultTime = parseInt(defaultTimeInput.value);
+            if (newDefaultTime > 0) {
+                defaultTime = newDefaultTime;
+                count = defaultTime; // Reset the current timer to the new default
+            }
+        });
+
+        defaultTimeInput.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const step = event.deltaY < 0 ? 1 : -1;
+            const currentValue = parseInt(defaultTimeInput.value) || defaultTime;
+            const newValue = Math.max(1, currentValue + step);
+            defaultTimeInput.value = newValue;
+            defaultTime = newValue;
+            count = defaultTime;
+        });
+
+        document.body.addEventListener('dblclick', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key.toLowerCase() === 'f') {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            } else if (event.key.toLowerCase() === 'm' || event.key === 'צ') {
+                toggleMute();
+            } else if (event.key === 'ArrowUp') {
+                volume = Math.min(1, volume + 0.1);
+                volumeBar.value = volume;
+            } else if (event.key === 'ArrowDown') {
+                volume = Math.max(0, volume - 0.1);
+                volumeBar.value = volume;
+            } else if (event.key === 'Home') {
+                toggleStealthMode();
+            }
+        });
+
+        document.body.addEventListener('mousemove', (event) => {
+            if (event.clientX <= window.innerWidth * 0.03) {
+                volumeControl.style.display = 'flex';
+            } else {
+                volumeControl.style.display = 'none';
+            }
+        });
+
+        volumeBar.addEventListener('input', (event) => {
+            volume = parseFloat(event.target.value);
+        });
+
+        muteIcon.addEventListener('click', toggleMute);
+
         function toggleMute() {
             isMuted = !isMuted;
             muteIcon.className = isMuted ? 'muted' : 'unmuted';
-            mobileMuteButton.className = isMuted ? 'muted' : 'unmuted';
-            mobileMuteButton.textContent = isMuted ? '🕪' : '🔇';
+            document.title = isMuted ? '🔇' : `${count}`;
         }
 
-        muteIcon.addEventListener('click', toggleMute);
-        mobileMuteButton.addEventListener('click', toggleMute);
-
-        // Initialize Timer Display
-        let defaultTime = 4;
-        let count = defaultTime;
-
-        function updateTimerDisplay() {
-            timerElement.textContent = count;
+        function toggleStealthMode() {
+            isStealthMode = !isStealthMode;
+            document.body.classList.toggle('stealth-mode', isStealthMode);
+            if (isStealthMode) {
+                isMuted = true;
+                muteIcon.className = 'muted';
+                document.title = '🔇';
+            } else {
+                isMuted = false;
+                muteIcon.className = 'unmuted';
+                document.title = `${count}`;
+            }
         }
 
-        function startCountdown() {
-            setInterval(() => {
-                if (count > 0) {
-                    count--;
-                    updateTimerDisplay();
-                } else {
-                    count = defaultTime;
-                    updateTimerDisplay();
-                }
-            }, 1000);
-        }
-
-        updateTimerDisplay();
-        startCountdown();
+        updateTimer();
     </script>
 </body>
 </html>
