@@ -49,19 +49,14 @@ function resetStopwatch() {
     stopwatchRunning = false;
 }
 
-startStopwatchButton.addEventListener('click', startStopwatch);
-resetStopwatchButton.addEventListener('click', resetStopwatch);
-
-// MUTE Button Functionality
 muteButton.addEventListener('click', () => {
-    isMuted = !isMuted; // Toggle mute state
-    muteIcon.className = isMuted ? 'muted' : 'unmuted'; // Update the mute icon
-    muteButton.textContent = isMuted ? 'UNMUTE' : 'MUTE'; // Update button text
-    document.title = isMuted ? '🔇' : `${count}`; // Update the tab title
+    isMuted = !isMuted;
+    muteIcon.className = isMuted ? 'muted' : 'unmuted';
+    muteButton.textContent = isMuted ? 'UNMUTE' : 'MUTE';
 });
 
-// Start the stopwatch on load
-startStopwatch();
+startStopwatchButton.addEventListener('click', startStopwatch);
+resetStopwatchButton.addEventListener('click', resetStopwatch);
 
 function updateTimer() {
     timerElement.textContent = count;
@@ -87,77 +82,5 @@ defaultTimeInput.addEventListener('change', () => {
         count = defaultTime;
     }
 });
-
-defaultTimeInput.addEventListener('wheel', (event) => {
-    event.preventDefault();
-    const step = event.deltaY < 0 ? 1 : -1;
-    const currentValue = parseInt(defaultTimeInput.value) || defaultTime;
-    const newValue = Math.max(1, currentValue + step);
-    defaultTimeInput.value = newValue;
-    defaultTime = newValue;
-    count = defaultTime;
-});
-
-document.body.addEventListener('dblclick', () => {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-    } else {
-        document.exitFullscreen();
-    }
-});
-
-document.addEventListener('keydown', (event) => {
-    if (event.key.toLowerCase() === 'f') {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-        } else {
-            document.exitFullscreen();
-        }
-    } else if (event.key.toLowerCase() === 'm' || event.key === 'צ') {
-        toggleMute();
-    } else if (event.key === 'ArrowUp') {
-        volume = Math.min(1, volume + 0.1);
-        volumeBar.value = volume;
-    } else if (event.key === 'ArrowDown') {
-        volume = Math.max(0, volume - 0.1);
-        volumeBar.value = volume;
-    } else if (event.key === 'Home') {
-        toggleStealthMode();
-    }
-});
-
-document.body.addEventListener('mousemove', (event) => {
-    if (event.clientX <= window.innerWidth * 0.03) {
-        volumeControl.style.display = 'flex';
-    } else {
-        volumeControl.style.display = 'none';
-    }
-});
-
-volumeBar.addEventListener('input', (event) => {
-    volume = parseFloat(event.target.value);
-});
-
-muteIcon.addEventListener('click', toggleMute);
-
-function toggleMute() {
-    isMuted = !isMuted;
-    muteIcon.className = isMuted ? 'muted' : 'unmuted';
-    document.title = isMuted ? '🔇' : `${count}`;
-}
-
-function toggleStealthMode() {
-    isStealthMode = !isStealthMode;
-    document.body.classList.toggle('stealth-mode', isStealthMode);
-    if (isStealthMode) {
-        isMuted = true;
-        muteIcon.className = 'muted';
-        document.title = '🔇';
-    } else {
-        isMuted = false;
-        muteIcon.className = 'unmuted';
-        document.title = `${count}`;
-    }
-}
 
 updateTimer();
