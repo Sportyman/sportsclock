@@ -90,35 +90,56 @@
             content: '\1F507'; /* Speaker with X emoji for muted */
         }
 
+        .stealth-mode {
+            background-color: black !important;
+            color: black !important;
+            transition: none !important;
+        }
+
+        .stealth-mode * {
+            display: none !important;
+        }
+
+        #stopwatch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 2rem;
+        }
+
+        #stopwatchControls {
+            margin-top: 10px;
+        }
+
+        #stopwatchControls button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #stopwatchControls button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
         #mobileMuteButton {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #ff5722;
-            border-radius: 50%;
+            background-color: red;
             color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
             border: none;
-            outline: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 5;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        #mobileMuteButton:hover {
-            background-color: #e64a19;
-        }
-
-        @media (max-width: 768px) {
-            #mobileMuteButton {
-                display: flex; /* Show only on mobile devices */
-            }
+            z-index: 10;
         }
     </style>
 </head>
@@ -136,7 +157,7 @@
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
     </div>
-    <button id="mobileMuteButton">MUTE</button>
+    <button id="mobileMuteButton">🔇</button>
 
     <script>
         const timerElement = document.getElementById('timer');
@@ -144,40 +165,72 @@
         const volumeControl = document.getElementById('volumeControl');
         const volumeBar = document.getElementById('volumeBar');
         const muteIcon = document.getElementById('muteIcon');
+        const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+        const startStopwatchButton = document.getElementById('startStopwatch');
+        const resetStopwatchButton = document.getElementById('resetStopwatch');
         const mobileMuteButton = document.getElementById('mobileMuteButton');
 
         let defaultTime = 4;
         let count = defaultTime;
         let isMuted = false;
         let volume = 1;
+        let isStealthMode = false;
 
-        function toggleMute() {
-            isMuted = !isMuted;
-            muteIcon.className = isMuted ? 'muted' : 'unmuted';
-            mobileMuteButton.textContent = isMuted ? 'UNMUTE' : 'MUTE';
-            document.title = isMuted ? '🔇' : `${count}`;
+        // Function to check if the device is mobile
+        function isMobileDevice() {
+            return /Mobi|Android/i.test(navigator.userAgent);
         }
 
-        muteIcon.addEventListener('click', toggleMute);
-        mobileMuteButton.addEventListener('click', toggleMute);
+        // Show mobile mute button if on mobile
+        if (isMobileDevice()) {
+            mobileMuteButton.style.display = 'block';
+        }
+
+        mobileMuteButton.addEventListener('click', () => {
+            isMuted = !isMuted;
+            muteIcon.className = isMuted ? 'muted' : 'unmuted';
+            mobileMuteButton.textContent = isMuted ? '🔊' : '🔇';
+        });
+
+        // Other existing code for the timer, volume control, etc.
 
         function updateTimerDisplay() {
             timerElement.textContent = count;
         }
 
-        function startCountdown() {
-            setInterval(() => {
-                if (count > 0) {
-                    count--;
-                    updateTimerDisplay();
-                } else {
-                    count = defaultTime;
-                    updateTimerDisplay();
-                }
-            }, 1000);
+        function updateStopwatchDisplay() {
+            const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
+            const seconds = String(stopwatchTime % 60).padStart(2, '0');
+            stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
-        startCountdown();
+        let stopwatchInterval;
+        let stopwatchRunning = false;
+        let stopwatchTime = 0;
+
+        startStopwatchButton.addEventListener('click', () => {
+            if (!stopwatchRunning) {
+                stopwatchInterval = setInterval(() => {
+                    stopwatchTime++;
+                    updateStopwatchDisplay();
+                }, 1000);
+                stopwatchRunning = true;
+            } else {
+                clearInterval(stopwatchInterval);
+                stopwatchRunning = false;
+            }
+        });
+
+        resetStopwatchButton.addEventListener('click', () => {
+            clearInterval(stopwatchInterval);
+            stopwatchTime = 0;
+            updateStopwatchDisplay();
+            stopwatchRunning = false;
+        });
+
+        // Initialize timer and other features
+        updateTimerDisplay();
     </script>
 </body>
 </html>
