@@ -90,66 +90,34 @@
             content: '\1F507'; /* Speaker with X emoji for muted */
         }
 
-        .stealth-mode {
-            background-color: black !important;
-            color: black !important;
-            transition: none !important;
-        }
-
-        .stealth-mode * {
-            display: none !important;
-        }
-
-        #stopwatch {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-            font-size: 2rem;
-        }
-
-        #stopwatchControls {
-            margin-top: 10px;
-        }
-
-        #stopwatchControls button {
-            margin: 0 5px;
-            padding: 5px 10px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #stopwatchControls button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
         #mobileMuteButton {
-            display: none;
+            display: none; /* Hidden by default */
             position: fixed;
             bottom: 20px;
             right: 20px;
             width: 60px;
             height: 60px;
-            background-color: #444;
-            color: white;
+            background-color: #ff5722;
             border-radius: 50%;
-            display: flex;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            outline: none;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            z-index: 5;
             cursor: pointer;
-            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
-        #mobileMuteButton.muted {
-            background-color: #b00;
+        #mobileMuteButton:hover {
+            background-color: #e64a19;
         }
 
         @media (max-width: 768px) {
             #mobileMuteButton {
-                display: flex;
+                display: flex; /* Show only on mobile devices */
             }
         }
     </style>
@@ -168,7 +136,7 @@
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
     </div>
-    <div id="mobileMuteButton" class="unmuted">🔇</div>
+    <button id="mobileMuteButton">MUTE</button>
 
     <script>
         const timerElement = document.getElementById('timer');
@@ -178,22 +146,20 @@
         const muteIcon = document.getElementById('muteIcon');
         const mobileMuteButton = document.getElementById('mobileMuteButton');
 
+        let defaultTime = 4;
+        let count = defaultTime;
         let isMuted = false;
+        let volume = 1;
 
-        // Toggle Mute Functionality
         function toggleMute() {
             isMuted = !isMuted;
             muteIcon.className = isMuted ? 'muted' : 'unmuted';
-            mobileMuteButton.className = isMuted ? 'muted' : 'unmuted';
-            mobileMuteButton.textContent = isMuted ? '🕪' : '🔇';
+            mobileMuteButton.textContent = isMuted ? 'UNMUTE' : 'MUTE';
+            document.title = isMuted ? '🔇' : `${count}`;
         }
 
         muteIcon.addEventListener('click', toggleMute);
         mobileMuteButton.addEventListener('click', toggleMute);
-
-        // Initialize Timer Display
-        let defaultTime = 4;
-        let count = defaultTime;
 
         function updateTimerDisplay() {
             timerElement.textContent = count;
@@ -211,7 +177,6 @@
             }, 1000);
         }
 
-        updateTimerDisplay();
         startCountdown();
     </script>
 </body>
