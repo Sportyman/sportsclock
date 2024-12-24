@@ -121,28 +121,35 @@
             cursor: pointer;
         }
 
+        #stopwatchControls button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
         #mobileMuteButton {
             display: none;
             position: fixed;
             bottom: 20px;
             right: 20px;
+            width: 60px;
+            height: 60px;
             background-color: #444;
             color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 5px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
             cursor: pointer;
-            z-index: 4;
+            z-index: 10;
         }
 
-        #mobileMuteButton:hover {
-            background-color: #555;
+        #mobileMuteButton.muted {
+            background-color: #b00;
         }
 
         @media (max-width: 768px) {
             #mobileMuteButton {
-                display: block;
+                display: flex;
             }
         }
     </style>
@@ -161,7 +168,7 @@
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
     </div>
-    <button id="mobileMuteButton">MUTE</button>
+    <div id="mobileMuteButton" class="unmuted">🔇</div>
 
     <script>
         const timerElement = document.getElementById('timer');
@@ -169,34 +176,27 @@
         const volumeControl = document.getElementById('volumeControl');
         const volumeBar = document.getElementById('volumeBar');
         const muteIcon = document.getElementById('muteIcon');
-        const stopwatchDisplay = document.getElementById('stopwatchDisplay');
-        const startStopwatchButton = document.getElementById('startStopwatch');
-        const resetStopwatchButton = document.getElementById('resetStopwatch');
         const mobileMuteButton = document.getElementById('mobileMuteButton');
 
-        let defaultTime = 4;
-        let count = defaultTime;
         let isMuted = false;
-        let volume = 1;
-        let stopwatchRunning = false;
-        let stopwatchTime = 0;
-        let stopwatchInterval;
 
-        function updateTimerDisplay() {
-            timerElement.textContent = count;
-        }
-
-        function updateStopwatchDisplay() {
-            const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
-            const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
-            const seconds = String(stopwatchTime % 60).padStart(2, '0');
-            stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
-        }
-
+        // Toggle Mute Functionality
         function toggleMute() {
             isMuted = !isMuted;
             muteIcon.className = isMuted ? 'muted' : 'unmuted';
-            mobileMuteButton.textContent = isMuted ? 'UNMUTE' : 'MUTE';
+            mobileMuteButton.className = isMuted ? 'muted' : 'unmuted';
+            mobileMuteButton.textContent = isMuted ? '🕪' : '🔇';
+        }
+
+        muteIcon.addEventListener('click', toggleMute);
+        mobileMuteButton.addEventListener('click', toggleMute);
+
+        // Initialize Timer Display
+        let defaultTime = 4;
+        let count = defaultTime;
+
+        function updateTimerDisplay() {
+            timerElement.textContent = count;
         }
 
         function startCountdown() {
@@ -211,42 +211,8 @@
             }, 1000);
         }
 
-        startStopwatchButton.addEventListener('click', () => {
-            if (!stopwatchRunning) {
-                stopwatchInterval = setInterval(() => {
-                    stopwatchTime++;
-                    updateStopwatchDisplay();
-                }, 1000);
-                startStopwatchButton.textContent = 'PAUSE';
-                stopwatchRunning = true;
-            } else {
-                clearInterval(stopwatchInterval);
-                startStopwatchButton.textContent = 'START';
-                stopwatchRunning = false;
-            }
-        });
-
-        resetStopwatchButton.addEventListener('click', () => {
-            clearInterval(stopwatchInterval);
-            stopwatchTime = 0;
-            updateStopwatchDisplay();
-            stopwatchRunning = false;
-        });
-
-        mobileMuteButton.addEventListener('click', toggleMute);
-        muteIcon.addEventListener('click', toggleMute);
-
-        volumeBar.addEventListener('input', (event) => {
-            volume = parseFloat(event.target.value);
-        });
-
-        defaultTimeInput.addEventListener('change', () => {
-            defaultTime = parseInt(defaultTimeInput.value) || defaultTime;
-            count = defaultTime;
-            updateTimerDisplay();
-        });
-
         updateTimerDisplay();
+        startCountdown();
     </script>
 </body>
 </html>
