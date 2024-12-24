@@ -174,7 +174,7 @@
     </style>
 </head>
 <body>
-    <div id="timer">4</div>
+    <div id="timer">30</div>
     <div id="stopwatch">
         <div id="stopwatchDisplay">00:00:00</div>
         <div id="stopwatchControls">
@@ -182,7 +182,7 @@
             <button id="resetStopwatch">RESET</button>
         </div>
     </div>
-    <input id="defaultTimeInput" type="number" min="1" placeholder="4">
+    <input id="defaultTimeInput" type="number" min="1" placeholder="30">
     <div id="volumeControl">
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
@@ -211,7 +211,7 @@
         const resetStopwatchButton = document.getElementById('resetStopwatch');
         const sideMenu = document.getElementById('sideMenu');
 
-        let defaultTime = 4;
+        let defaultTime = 30;
         let count = defaultTime;
         let isMuted = false;
         let volume = 1;
