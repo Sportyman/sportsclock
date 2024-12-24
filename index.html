@@ -125,71 +125,31 @@
             background-color: rgba(255, 255, 255, 0.2);
         }
 
-        #sideMenu {
-            position: fixed;
-            right: -100%;
-            top: 0;
-            width: 300px;
-            height: 100%;
-            background-color: #222;
-            color: white;
-            overflow-y: auto;
-            transition: right 0.3s ease;
-            padding: 10px;
-        }
-
-        #sideMenu:hover {
-            right: 0;
-        }
-
-        .menuTile {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100px;
-            background-color: #333;
-            color: white;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .menuTile:hover {
-            background-color: #444;
-        }
-
-        .addTile {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        .exerciseImage {
-            width: 80px;
-            height: 80px;
-            border-radius: 5px;
-            background-color: white;
-            margin-right: 10px;
-        }
-
         #mobileMuteButton {
             display: none;
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: red;
+            width: 60px;
+            height: 60px;
+            background-color: #444;
             color: white;
-            font-size: 1.5rem;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
             cursor: pointer;
             z-index: 10;
         }
 
-        @media only screen and (max-width: 768px) {
+        #mobileMuteButton.muted {
+            background-color: #b00;
+        }
+
+        @media (max-width: 768px) {
             #mobileMuteButton {
-                display: block;
+                display: flex;
             }
         }
     </style>
@@ -208,18 +168,7 @@
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
     </div>
-    <div id="sideMenu">
-        <div class="menuTile addTile">+</div>
-        <div class="menuTile">
-            <div class="exerciseImage"></div>
-            Exercise 1
-        </div>
-        <div class="menuTile">
-            <div class="exerciseImage"></div>
-            Exercise 2
-        </div>
-    </div>
-    <button id="mobileMuteButton">Mute</button>
+    <div id="mobileMuteButton" class="unmuted">🔇</div>
 
     <script>
         const timerElement = document.getElementById('timer');
@@ -227,29 +176,43 @@
         const volumeControl = document.getElementById('volumeControl');
         const volumeBar = document.getElementById('volumeBar');
         const muteIcon = document.getElementById('muteIcon');
-        const stopwatchDisplay = document.getElementById('stopwatchDisplay');
-        const startStopwatchButton = document.getElementById('startStopwatch');
-        const resetStopwatchButton = document.getElementById('resetStopwatch');
         const mobileMuteButton = document.getElementById('mobileMuteButton');
 
-        let defaultTime = 4;
-        let count = defaultTime;
         let isMuted = false;
-        let volume = 1;
-        let isStealthMode = false;
 
-        // Stopwatch variables
-        let stopwatchInterval;
-        let stopwatchRunning = false;
-        let stopwatchTime = 0;
-
-        function updateStopwatchDisplay() {
-            const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
-            const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
-            const seconds = String(stopwatchTime % 60).padStart(2, '0');
-            stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        // Toggle Mute Functionality
+        function toggleMute() {
+            isMuted = !isMuted;
+            muteIcon.className = isMuted ? 'muted' : 'unmuted';
+            mobileMuteButton.className = isMuted ? 'muted' : 'unmuted';
+            mobileMuteButton.textContent = isMuted ? '🕪' : '🔇';
         }
 
-        function startStopwatch() {
-            if (!stopwatchRunning) {
-               
+        muteIcon.addEventListener('click', toggleMute);
+        mobileMuteButton.addEventListener('click', toggleMute);
+
+        // Initialize Timer Display
+        let defaultTime = 4;
+        let count = defaultTime;
+
+        function updateTimerDisplay() {
+            timerElement.textContent = count;
+        }
+
+        function startCountdown() {
+            setInterval(() => {
+                if (count > 0) {
+                    count--;
+                    updateTimerDisplay();
+                } else {
+                    count = defaultTime;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        updateTimerDisplay();
+        startCountdown();
+    </script>
+</body>
+</html>
