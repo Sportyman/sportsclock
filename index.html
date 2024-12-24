@@ -179,20 +179,28 @@
         let stopwatchRunning = false;
         let stopwatchInterval;
 
+        // Initialize Timer
         function initializeTimer() {
             function updateTimer() {
                 if (count > 0) {
                     count--;
-                    timerElement.textContent = count;
                 } else {
                     count = defaultTime;
                 }
+                timerElement.textContent = count;
             }
-
             setInterval(updateTimer, 1000);
         }
 
+        // Initialize Stopwatch
         function initializeStopwatch() {
+            function updateStopwatchDisplay() {
+                const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
+                const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
+                const seconds = String(stopwatchTime % 60).padStart(2, '0');
+                stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+
             startStopwatchButton.addEventListener('click', () => {
                 if (!stopwatchRunning) {
                     stopwatchInterval = setInterval(() => {
@@ -212,8 +220,11 @@
                 updateStopwatchDisplay();
                 stopwatchRunning = false;
             });
+
+            updateStopwatchDisplay();
         }
 
+        // Initialize Volume Control
         function initializeVolumeControl() {
             volumeBar.addEventListener('input', (event) => {
                 volume = parseFloat(event.target.value);
@@ -225,6 +236,7 @@
             });
         }
 
+        // Initialize Mobile Mute Button
         function initializeMobileMuteButton() {
             if (/Mobi|Android/i.test(navigator.userAgent)) {
                 mobileMuteButton.style.display = 'block';
@@ -236,21 +248,16 @@
             }
         }
 
-        function updateStopwatchDisplay() {
-            const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
-            const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
-            const seconds = String(stopwatchTime % 60).padStart(2, '0');
-            stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        // Initialize All Features
+        function initializeAll() {
+            initializeTimer();
+            initializeStopwatch();
+            initializeVolumeControl();
+            initializeMobileMuteButton();
+            timerElement.textContent = defaultTime; // Display initial time
         }
 
-        initializeTimer();
-        initializeStopwatch();
-        initializeVolumeControl();
-        initializeMobileMuteButton();
-
-        // Ensure all initial displays are correct
-        timerElement.textContent = defaultTime;
-        updateStopwatchDisplay();
+        initializeAll();
     </script>
 </body>
 </html>
