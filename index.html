@@ -124,23 +124,6 @@
         #stopwatchControls button:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-
-        #mobileMuteButton {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 10;
-        }
     </style>
 </head>
 <body>
@@ -157,7 +140,6 @@
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
     </div>
-    <button id="mobileMuteButton">🔇</button>
 
     <script>
         const timerElement = document.getElementById('timer');
@@ -168,96 +150,70 @@
         const stopwatchDisplay = document.getElementById('stopwatchDisplay');
         const startStopwatchButton = document.getElementById('startStopwatch');
         const resetStopwatchButton = document.getElementById('resetStopwatch');
-        const mobileMuteButton = document.getElementById('mobileMuteButton');
 
         let defaultTime = 4;
         let count = defaultTime;
         let isMuted = false;
         let volume = 1;
-        let isStealthMode = false;
-        let stopwatchTime = 0;
-        let stopwatchRunning = false;
         let stopwatchInterval;
+        let stopwatchRunning = false;
+        let stopwatchTime = 0;
 
-        // Initialize Timer
-        function initializeTimer() {
-            function updateTimer() {
-                if (count > 0) {
-                    count--;
-                } else {
-                    count = defaultTime;
-                }
+        function updateTimer() {
+            if (count > 0) {
+                count--;
+                timerElement.textContent = count;
+            } else {
+                count = defaultTime;
                 timerElement.textContent = count;
             }
-            setInterval(updateTimer, 1000);
         }
 
-        // Initialize Stopwatch
-        function initializeStopwatch() {
-            function updateStopwatchDisplay() {
-                const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
-                const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
-                const seconds = String(stopwatchTime % 60).padStart(2, '0');
-                stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        setInterval(updateTimer, 1000);
+
+        defaultTimeInput.addEventListener('change', () => {
+            const newDefaultTime = parseInt(defaultTimeInput.value);
+            if (newDefaultTime > 0) {
+                defaultTime = newDefaultTime;
+                count = defaultTime;
+                timerElement.textContent = count;
             }
+        });
 
-            startStopwatchButton.addEventListener('click', () => {
-                if (!stopwatchRunning) {
-                    stopwatchInterval = setInterval(() => {
-                        stopwatchTime++;
-                        updateStopwatchDisplay();
-                    }, 1000);
-                    stopwatchRunning = true;
-                } else {
-                    clearInterval(stopwatchInterval);
-                    stopwatchRunning = false;
-                }
-            });
+        volumeBar.addEventListener('input', (event) => {
+            volume = parseFloat(event.target.value);
+        });
 
-            resetStopwatchButton.addEventListener('click', () => {
+        muteIcon.addEventListener('click', () => {
+            isMuted = !isMuted;
+            muteIcon.className = isMuted ? 'muted' : 'unmuted';
+        });
+
+        startStopwatchButton.addEventListener('click', () => {
+            if (!stopwatchRunning) {
+                stopwatchInterval = setInterval(() => {
+                    stopwatchTime++;
+                    const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
+                    const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
+                    const seconds = String(stopwatchTime % 60).padStart(2, '0');
+                    stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+                }, 1000);
+                stopwatchRunning = true;
+            } else {
                 clearInterval(stopwatchInterval);
-                stopwatchTime = 0;
-                updateStopwatchDisplay();
                 stopwatchRunning = false;
-            });
-
-            updateStopwatchDisplay();
-        }
-
-        // Initialize Volume Control
-        function initializeVolumeControl() {
-            volumeBar.addEventListener('input', (event) => {
-                volume = parseFloat(event.target.value);
-            });
-
-            muteIcon.addEventListener('click', () => {
-                isMuted = !isMuted;
-                muteIcon.className = isMuted ? 'muted' : 'unmuted';
-            });
-        }
-
-        // Initialize Mobile Mute Button
-        function initializeMobileMuteButton() {
-            if (/Mobi|Android/i.test(navigator.userAgent)) {
-                mobileMuteButton.style.display = 'block';
-                mobileMuteButton.addEventListener('click', () => {
-                    isMuted = !isMuted;
-                    muteIcon.className = isMuted ? 'muted' : 'unmuted';
-                    mobileMuteButton.textContent = isMuted ? '🔊' : '🔇';
-                });
             }
-        }
+        });
 
-        // Initialize All Features
-        function initializeAll() {
-            initializeTimer();
-            initializeStopwatch();
-            initializeVolumeControl();
-            initializeMobileMuteButton();
-            timerElement.textContent = defaultTime; // Display initial time
-        }
-
-        initializeAll();
+        resetStopwatchButton.addEventListener('click', () => {
+            clearInterval(stopwatchInterval);
+            stopwatchTime = 0;
+            const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
+            const seconds = String(stopwatchTime % 60).padStart(2, '0');
+            stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+            stopwatchRunning = false;
+        });
     </script>
 </body>
 </html>
