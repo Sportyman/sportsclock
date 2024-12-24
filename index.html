@@ -124,6 +124,74 @@
         #stopwatchControls button:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
+
+        #sideMenu {
+            position: fixed;
+            right: -100%;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background-color: #222;
+            color: white;
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            padding: 10px;
+        }
+
+        #sideMenu:hover {
+            right: 0;
+        }
+
+        .menuTile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100px;
+            background-color: #333;
+            color: white;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .menuTile:hover {
+            background-color: #444;
+        }
+
+        .addTile {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .exerciseImage {
+            width: 80px;
+            height: 80px;
+            border-radius: 5px;
+            background-color: white;
+            margin-right: 10px;
+        }
+
+        #mobileMuteButton {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: red;
+            color: white;
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        @media only screen and (max-width: 768px) {
+            #mobileMuteButton {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
@@ -140,6 +208,18 @@
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
     </div>
+    <div id="sideMenu">
+        <div class="menuTile addTile">+</div>
+        <div class="menuTile">
+            <div class="exerciseImage"></div>
+            Exercise 1
+        </div>
+        <div class="menuTile">
+            <div class="exerciseImage"></div>
+            Exercise 2
+        </div>
+    </div>
+    <button id="mobileMuteButton">Mute</button>
 
     <script>
         const timerElement = document.getElementById('timer');
@@ -150,70 +230,26 @@
         const stopwatchDisplay = document.getElementById('stopwatchDisplay');
         const startStopwatchButton = document.getElementById('startStopwatch');
         const resetStopwatchButton = document.getElementById('resetStopwatch');
+        const mobileMuteButton = document.getElementById('mobileMuteButton');
 
         let defaultTime = 4;
         let count = defaultTime;
         let isMuted = false;
         let volume = 1;
+        let isStealthMode = false;
+
+        // Stopwatch variables
         let stopwatchInterval;
         let stopwatchRunning = false;
         let stopwatchTime = 0;
 
-        function updateTimer() {
-            if (count > 0) {
-                count--;
-                timerElement.textContent = count;
-            } else {
-                count = defaultTime;
-                timerElement.textContent = count;
-            }
-        }
-
-        setInterval(updateTimer, 1000);
-
-        defaultTimeInput.addEventListener('change', () => {
-            const newDefaultTime = parseInt(defaultTimeInput.value);
-            if (newDefaultTime > 0) {
-                defaultTime = newDefaultTime;
-                count = defaultTime;
-                timerElement.textContent = count;
-            }
-        });
-
-        volumeBar.addEventListener('input', (event) => {
-            volume = parseFloat(event.target.value);
-        });
-
-        muteIcon.addEventListener('click', () => {
-            isMuted = !isMuted;
-            muteIcon.className = isMuted ? 'muted' : 'unmuted';
-        });
-
-        startStopwatchButton.addEventListener('click', () => {
-            if (!stopwatchRunning) {
-                stopwatchInterval = setInterval(() => {
-                    stopwatchTime++;
-                    const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
-                    const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
-                    const seconds = String(stopwatchTime % 60).padStart(2, '0');
-                    stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
-                }, 1000);
-                stopwatchRunning = true;
-            } else {
-                clearInterval(stopwatchInterval);
-                stopwatchRunning = false;
-            }
-        });
-
-        resetStopwatchButton.addEventListener('click', () => {
-            clearInterval(stopwatchInterval);
-            stopwatchTime = 0;
+        function updateStopwatchDisplay() {
             const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
             const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
             const seconds = String(stopwatchTime % 60).padStart(2, '0');
             stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
-            stopwatchRunning = false;
-        });
-    </script>
-</body>
-</html>
+        }
+
+        function startStopwatch() {
+            if (!stopwatchRunning) {
+               
