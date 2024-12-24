@@ -175,27 +175,65 @@
         let isMuted = false;
         let volume = 1;
         let isStealthMode = false;
+        let stopwatchTime = 0;
+        let stopwatchRunning = false;
+        let stopwatchInterval;
 
-        // Function to check if the device is mobile
-        function isMobileDevice() {
-            return /Mobi|Android/i.test(navigator.userAgent);
+        function initializeTimer() {
+            function updateTimer() {
+                if (count > 0) {
+                    count--;
+                    timerElement.textContent = count;
+                } else {
+                    count = defaultTime;
+                }
+            }
+
+            setInterval(updateTimer, 1000);
         }
 
-        // Show mobile mute button if on mobile
-        if (isMobileDevice()) {
-            mobileMuteButton.style.display = 'block';
+        function initializeStopwatch() {
+            startStopwatchButton.addEventListener('click', () => {
+                if (!stopwatchRunning) {
+                    stopwatchInterval = setInterval(() => {
+                        stopwatchTime++;
+                        updateStopwatchDisplay();
+                    }, 1000);
+                    stopwatchRunning = true;
+                } else {
+                    clearInterval(stopwatchInterval);
+                    stopwatchRunning = false;
+                }
+            });
+
+            resetStopwatchButton.addEventListener('click', () => {
+                clearInterval(stopwatchInterval);
+                stopwatchTime = 0;
+                updateStopwatchDisplay();
+                stopwatchRunning = false;
+            });
         }
 
-        mobileMuteButton.addEventListener('click', () => {
-            isMuted = !isMuted;
-            muteIcon.className = isMuted ? 'muted' : 'unmuted';
-            mobileMuteButton.textContent = isMuted ? '🔊' : '🔇';
-        });
+        function initializeVolumeControl() {
+            volumeBar.addEventListener('input', (event) => {
+                volume = parseFloat(event.target.value);
+            });
 
-        // Other existing code for the timer, volume control, etc.
+            muteIcon.addEventListener('click', () => {
+                isMuted = !isMuted;
+                muteIcon.className = isMuted ? 'muted' : 'unmuted';
+            });
+        }
 
-        function updateTimerDisplay() {
-            timerElement.textContent = count;
+        function initializeMobileMuteButton() {
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                mobileMuteButton.style.display = 'block';
+                mobileMuteButton.addEventListener('click', () => {
+                    isMuted = !isMuted;
+                    muteIcon.className = isMuted ? 'muted' : 'unmuted';
+                    mobileMuteButton.textContent = isMuted ? '🔊' : '🔇';
+                });
+            }
         }
 
         function updateStopwatchDisplay() {
@@ -205,32 +243,14 @@
             stopwatchDisplay.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
-        let stopwatchInterval;
-        let stopwatchRunning = false;
-        let stopwatchTime = 0;
+        initializeTimer();
+        initializeStopwatch();
+        initializeVolumeControl();
+        initializeMobileMuteButton();
 
-        startStopwatchButton.addEventListener('click', () => {
-            if (!stopwatchRunning) {
-                stopwatchInterval = setInterval(() => {
-                    stopwatchTime++;
-                    updateStopwatchDisplay();
-                }, 1000);
-                stopwatchRunning = true;
-            } else {
-                clearInterval(stopwatchInterval);
-                stopwatchRunning = false;
-            }
-        });
-
-        resetStopwatchButton.addEventListener('click', () => {
-            clearInterval(stopwatchInterval);
-            stopwatchTime = 0;
-            updateStopwatchDisplay();
-            stopwatchRunning = false;
-        });
-
-        // Initialize timer and other features
-        updateTimerDisplay();
+        // Ensure all initial displays are correct
+        timerElement.textContent = defaultTime;
+        updateStopwatchDisplay();
     </script>
 </body>
 </html>
