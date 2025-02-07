@@ -27,10 +27,20 @@
             text-align: center;
         }
 
-        #defaultTimeInput {
+        /* קונטיינר תחתון למובייל/דסקטופ – מכיל את תיבת הזמן + כפתור הווליום */
+        #mobileControls {
             position: absolute;
             bottom: 10px;
             left: 10px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            z-index: 2;
+        }
+
+        /* תיבת הזנת זמן */
+        #defaultTimeInput {
             background-color: white;
             color: black;
             border: none;
@@ -39,10 +49,21 @@
             border-radius: 4px;
             width: 50px;
             text-align: center;
-            z-index: 2; 
         }
 
-        /* בקרת ווליום */
+        /* כפתור הצגת/הסתרת בקרת ווליום במובייל */
+        #mobileVolumeBtn {
+            display: none; /* יוצג רק במסכים צרים */
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* בקרת ווליום (מיקום צד שמאל בדסקטופ, מוסתרת ברירת מחדל) */
         #volumeControl {
             position: absolute;
             left: 0;
@@ -50,7 +71,7 @@
             transform: translateY(-50%);
             width: 3%;
             background-color: transparent;
-            display: none; /* יוצג כאשר "עכבר בצד שמאל" בדסקטופ או ע"י כפתור במובייל */
+            display: none; /* מוצג ב-hover בדסקטופ או ע"י כפתור במובייל */
             flex-direction: column;
             align-items: center;
             opacity: 0.6;
@@ -84,7 +105,7 @@
             z-index: 3; 
         }
 
-        /* משתמשים באימוג'ים נפוצים יותר */
+        /* משתמשים באימוג'ים נפוצים יותר כדי להימנע מחוסר תאימות */
         #muteIcon.unmuted::before {
             content: '🔊'; /* Speaker on */
         }
@@ -129,37 +150,21 @@
             background-color: rgba(255, 255, 255, 0.2);
         }
 
-        /* כפתור הצגת ווליום למובייל */
-        #mobileVolumeBtn {
-            display: none; /* יוצג רק מתחת לרוחב 600px */
-            position: absolute;
-            /* נשנה למיקום עליון-ימני כדי שלא "ייבלע" */
-            top: 10px;
-            right: 10px;
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            z-index: 5;
-        }
-
         /* מדיה קוורי למובייל */
         @media (max-width: 600px) {
             #timer {
-                font-size: 25vh; /* טיימר קטן יותר בטלפונים */
+                font-size: 25vh; /* קטן יותר בטלפונים */
             }
 
+            /* מציגים את כפתור הווליום */
             #mobileVolumeBtn {
                 display: block; 
             }
 
-            /* נפעיל את בקרת הווליום באזור ימני-עליון מתחת לכפתור */
+            /* נפעיל את בקרת הווליום באזור ימני-עליון (או תחתון, לשיקולך) */
             #volumeControl {
-                top: 60px; 
-                bottom: auto;
+                top: auto;
+                bottom: 60px;
                 right: 10px;
                 left: auto;
                 width: auto; 
@@ -170,12 +175,6 @@
 
             #volumeBar {
                 height: 100px; /* סליידר קטן יותר במובייל */
-            }
-
-            /* כדי שלא יתנגש ב-#volumeControl */
-            #defaultTimeInput {
-                bottom: 10px; 
-                left: 10px; 
             }
         }
     </style>
@@ -191,10 +190,11 @@
         </div>
     </div>
 
-    <input id="defaultTimeInput" type="number" min="1" placeholder="30">
-
-    <!-- כפתור ווליום למובייל (מופיע רק ברוחב <= 600px) -->
-    <button id="mobileVolumeBtn">Volume</button>
+    <!-- אלמנט עוטף משותף: תיבת זמן + כפתור ווליום מובייל -->
+    <div id="mobileControls">
+        <input id="defaultTimeInput" type="number" min="1" placeholder="30">
+        <button id="mobileVolumeBtn">Volume</button>
+    </div>
 
     <!-- בקרת ווליום -->
     <div id="volumeControl">
@@ -285,8 +285,6 @@
 
         function updateTimer() {
             timerElement.textContent = count;
-
-            // Update the tab title
             document.title = isMuted ? '🔇' : `${count}`;
 
             if (count <= Math.floor(defaultTime / 2)) {
@@ -302,15 +300,16 @@
             count--;
 
             if (count < 0) {
-                // Play sound at the end of the timer
+                // Play sound at the end
                 lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
                 count = defaultTime; // Reset
-                setTimeout(updateTimer, 3000); // Wait 3s before restart
+                setTimeout(updateTimer, 3000);
             } else {
-                setTimeout(updateTimer, 1000); // Update every second
+                setTimeout(updateTimer, 1000);
             }
         }
 
+        // שינוי זמן ידני
         defaultTimeInput.addEventListener('change', () => {
             const newDefaultTime = parseInt(defaultTimeInput.value);
             if (newDefaultTime > 0) {
@@ -319,6 +318,7 @@
             }
         });
 
+        // שינוי זמן עם גלגלת עכבר
         defaultTimeInput.addEventListener('wheel', (event) => {
             event.preventDefault();
             const step = event.deltaY < 0 ? 1 : -1;
@@ -329,7 +329,7 @@
             count = defaultTime;
         });
 
-        // כניסה/יציאה ממסך מלא
+        // מסך מלא עם דאבל-קליק
         document.body.addEventListener('dblclick', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -338,6 +338,7 @@
             }
         });
 
+        // קיצורי מקלדת
         document.addEventListener('keydown', (event) => {
             if (event.key.toLowerCase() === 'f') {
                 if (!document.fullscreenElement) {
@@ -360,7 +361,6 @@
 
         // בדסקטופ – הזזה לצד שמאל תציג את בקרת הווליום
         document.body.addEventListener('mousemove', (event) => {
-            // נבדוק רק אם הרוחב מעל 600px (בדסקטופ)
             if (window.innerWidth > 600) {
                 if (event.clientX <= window.innerWidth * 0.03) {
                     volumeControl.style.display = 'flex';
@@ -379,10 +379,12 @@
             }
         });
 
+        // סליידר ווליום
         volumeBar.addEventListener('input', (event) => {
             volume = parseFloat(event.target.value);
         });
 
+        // מיוט
         muteIcon.addEventListener('click', toggleMute);
 
         function toggleMute() {
@@ -391,6 +393,7 @@
             document.title = isMuted ? '🔇' : `${count}`;
         }
 
+        // מצב הסוואה (stealth)
         function toggleStealthMode() {
             isStealthMode = !isStealthMode;
             document.body.classList.toggle('stealth-mode', isStealthMode);
