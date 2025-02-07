@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Exercise Timer</title>
   <style>
     body {
@@ -28,7 +28,7 @@
       text-align: center;
     }
 
-    /* קונטיינר בתחתית למסך שמכיל: תיבת זמן משמאל, וכפתור ווליום מימין */
+    /* קונטיינר תחתון למסך שמכיל: תיבת זמן משמאל, כפתור רמקול מימין */
     #bottomControls {
       position: absolute;
       bottom: 10px;
@@ -37,7 +37,7 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      justify-content: space-between; /* תיבת זמן משמאל, כפתור ווליום מימין */
+      justify-content: space-between; /* תיבת זמן משמאל, כפתור רמקול מימין */
       margin: 0 10px;
       z-index: 2;
     }
@@ -54,25 +54,24 @@
       text-align: center;
     }
 
-    /*
-      כפתור ווליום (למובייל), המוצג גם בדסקטופ למקרה שתרצה
-      אם רוצים להסתיר בדסקטופ, אפשר להשתמש ב-@media 
-    */
+    /* כפתור רמקול למטה, מציג רק אייקון (🔊 / 🔇) – אינו משנה מיוט/לא בעצמו */
     #mobileVolumeBtn {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
+      background: transparent;
       border: none;
-      padding: 8px;
-      border-radius: 5px;
-      font-size: 1rem;
+      color: white;
+      font-size: 1.5rem;
       cursor: pointer;
       position: relative;
+      padding: 4px;
+      border-radius: 50%;
+      box-shadow: 0 0 5px rgba(255,255,255,0.4);
+      transition: box-shadow 0.3s ease;
+    }
+    #mobileVolumeBtn:hover {
+      box-shadow: 0 0 10px rgba(255,255,255,0.6);
     }
 
-    /*
-      שימוש באייקונים באמצעות ::before
-      (unmuted => רמקול פעיל, muted => רמקול מושתק)
-    */
+    /* קלאסים לאייקון שמוצג בכפתור הראשי */
     #mobileVolumeBtn.unmuted::before {
       content: '🔊';
     }
@@ -80,19 +79,21 @@
       content: '🔇';
     }
 
-    /* חלונית בקרת הווליום (slider) – ממוקמת במרכז הגובה (Vertical Center) */
+    /* בקרת ווליום (התפריט) – ממוקמת במרכז הגובה (vertical center) */
     #volumeControl {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      left: 0;              /* בדסקטופ יוצג בצד שמאל */
-      background-color: transparent;
-      display: none;        /* מוצג כאשר מזיזים עכבר לשמאל בדסקטופ או לוחצים כפתור במובייל */
+      left: 0; 
+      background-color: rgba(255, 255, 255, 0.1);
+      display: none;   /* יוצג רק כאשר נפתח עם הכפתור הראשי */
       flex-direction: column;
       align-items: center;
-      opacity: 0.6;
-      pointer-events: none; /* מניעת אינטראקציה מחוץ לסליידר */
+      opacity: 0.8;
+      pointer-events: auto; 
       transition: 0.3s ease;
+      padding: 10px;
+      border-radius: 8px;
     }
 
     /* פס הווליום */
@@ -101,11 +102,33 @@
       -webkit-appearance: slider-vertical;
       appearance: slider-vertical;
       width: 8px;
-      height: 150px; 
+      height: 120px; 
       background-color: rgba(255, 255, 255, 0.7);
       outline: none;
       border-radius: 4px;
-      pointer-events: auto; /* Enables interactions within visible area */
+      margin-bottom: 10px;
+    }
+
+    /* כפתור מיוט בתוך התפריט */
+    #muteBtn {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: white;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    #muteBtn:hover {
+      background-color: rgba(255,255,255,0.3);
+    }
+    /* אייקון הכפתור עצמו (בתוך התפריט) */
+    #muteBtn.unmuted::before {
+      content: '🔊';
+    }
+    #muteBtn.muted::before {
+      content: '🔇';
     }
 
     /* מצב הסוואה (Stealth) */
@@ -126,11 +149,9 @@
       margin-top: 20px;
       font-size: 2rem;
     }
-
     #stopwatchControls {
       margin-top: 10px;
     }
-
     #stopwatchControls button {
       margin: 0 5px;
       padding: 5px 10px;
@@ -139,7 +160,6 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
     #stopwatchControls button:hover {
       background-color: rgba(255, 255, 255, 0.2);
     }
@@ -149,13 +169,11 @@
       #timer {
         font-size: 25vh; /* קטן יותר בטלפונים */
       }
-
-      /* במובייל נרצה להזיז את בקרת הווליום לצד ימין? */
+      /* במובייל - צד ימין */
       #volumeControl {
         left: auto;
         right: 10px;
       }
-
       #volumeBar {
         height: 100px; /* סליידר קטן יותר במובייל */
       }
@@ -176,15 +194,16 @@
     </div>
   </div>
 
-  <!-- אזור תחתון: תיבת זמן משמאל, כפתור ווליום מימין -->
+  <!-- אזור תחתון: תיבת זמן משמאל, כפתור רמקול מימין -->
   <div id="bottomControls">
     <input id="defaultTimeInput" type="number" min="1" placeholder="30">
     <button id="mobileVolumeBtn" class="unmuted"></button>
   </div>
 
-  <!-- בקרת ווליום (רק סליידר) -->
+  <!-- בקרת ווליום (סליידר + כפתור מיוט) -->
   <div id="volumeControl">
     <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
+    <button id="muteBtn" class="unmuted"></button>
   </div>
 
   <script>
@@ -192,6 +211,7 @@
     const defaultTimeInput = document.getElementById('defaultTimeInput');
     const volumeControl = document.getElementById('volumeControl');
     const volumeBar = document.getElementById('volumeBar');
+    const muteBtn = document.getElementById('muteBtn');
     const mobileVolumeBtn = document.getElementById('mobileVolumeBtn');
     const stopwatchDisplay = document.getElementById('stopwatchDisplay');
     const startStopwatchButton = document.getElementById('startStopwatch');
@@ -199,8 +219,10 @@
 
     let defaultTime = 30;
     let count = defaultTime;
-    let isMuted = false;
-    let volume = 1;
+
+    // שליטת עוצמה
+    let volume = 1;     // 0..1
+    let isMuted = false;  
     let isStealthMode = false;
 
     // Stopwatch variables
@@ -244,11 +266,20 @@
     // Start the stopwatch on load
     startStopwatch();
 
+    // פונקציה המחזירה את עוצמת הקול בפועל (אם מושתק => 0)
+    function getActualVolume() {
+      if (isMuted) {
+        return 0;
+      } else {
+        return volume; // 0..1
+      }
+    }
+
     // Paths for sound directories
     const halfSoundsDir = 'sounds/half/';
     const endSoundsDir = 'sounds/end/';
 
-    // Array of sound files
+    // Arrays of sound files
     const halfSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
     const endSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
 
@@ -262,16 +293,17 @@
       } while (randomIndex === lastSoundIdx);
 
       const audio = new Audio(`${directory}${soundArray[randomIndex]}`);
-      audio.volume = volume;
-      if (!isMuted) audio.play();
+      // עוצמת הקול בפועל:
+      audio.volume = getActualVolume();
+      audio.play();
       return randomIndex;
     }
 
     function updateTimer() {
       timerElement.textContent = count;
-      document.title = isMuted ? '🔇' : `${count}`;
+      document.title = (isMuted || volume === 0) ? '🔇' : `${count}`;
 
-      // חצי הזמן - הופך רקע לאדום + צליל "חצי"
+      // חצי הזמן - רקע אדום + צליל "חצי"
       if (count <= Math.floor(defaultTime / 2)) {
         document.body.style.backgroundColor = 'red';
         if (count === Math.floor(defaultTime / 2)) {
@@ -283,7 +315,7 @@
 
       count--;
       if (count < 0) {
-        // סוף הזמן - צליל סיום
+        // סוף
         lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
         count = defaultTime;
         setTimeout(updateTimer, 3000);
@@ -301,7 +333,7 @@
       }
     });
 
-    // שינוי זמן עם גלגלת עכבר
+    // שינוי זמן בגלגלת עכבר
     defaultTimeInput.addEventListener('wheel', (event) => {
       event.preventDefault();
       const step = event.deltaY < 0 ? 1 : -1;
@@ -330,22 +362,53 @@
           document.exitFullscreen();
         }
       } else if (event.key.toLowerCase() === 'm' || event.key === 'צ') {
+        // לחיצה על M => טוגל מיוט
         toggleMute();
+        updateVolumeIcons();
       } else if (event.key === 'ArrowUp') {
         volume = Math.min(1, volume + 0.1);
-        volumeBar.value = volume;
+        isMuted = false; // הזזנו ווליום => מבטלים מיוט
+        updateVolumeIcons();
       } else if (event.key === 'ArrowDown') {
         volume = Math.max(0, volume - 0.1);
-        volumeBar.value = volume;
+        if (volume > 0) {
+          isMuted = false; 
+        }
+        updateVolumeIcons();
       } else if (event.key === 'Home') {
         toggleStealthMode();
       }
     });
 
-    // בדסקטופ – תצוגת בקרת הווליום בהזזת עכבר לשמאל
+    // הצגת תפריט הווליום (ללא שינוי מיוט) בלחיצה על הכפתור הראשי
+    mobileVolumeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (volumeControl.style.display !== 'flex') {
+        volumeControl.style.display = 'flex';
+      } else {
+        volumeControl.style.display = 'none';
+      }
+    });
+
+    // לחיצה מחוץ לתפריט => הסתרה
+    document.addEventListener('click', (e) => {
+      if (
+        volumeControl.style.display === 'flex' &&
+        e.target !== mobileVolumeBtn && 
+        !volumeControl.contains(e.target)
+      ) {
+        volumeControl.style.display = 'none';
+      }
+    });
+
+    // בדסקטופ – תצוגת בקרת הווליום בהזזת עכבר לשמאל (רק אם התפריט לא כבר פתוח)
     document.body.addEventListener('mousemove', (event) => {
       if (window.innerWidth > 600) {
-        if (event.clientX <= window.innerWidth * 0.03) {
+        // אם כבר פתוח דרך הלחצן, לא נסגור/נפתח ע"י mousemove
+        // אפשר לוותר או להשאיר. כאן שומרים התנהגות קודמת (פרשנות).
+        if (volumeControl.style.display === 'flex') return;
+
+        if (!isMuted && volume > 0 && event.clientX <= window.innerWidth * 0.03) {
           volumeControl.style.display = 'flex';
         } else {
           volumeControl.style.display = 'none';
@@ -353,44 +416,65 @@
       }
     });
 
-    // במובייל/כלל המכשירים – כפתור למטה מימין להפעלת/השתקת סאונד + הצגת הסליידר
-    mobileVolumeBtn.addEventListener('click', () => {
-      toggleMute(); 
-      // בנוסף, אם כעת מושתק – נסגור את הסליידר, אחרת נפתח
-      if (isMuted) {
-        volumeControl.style.display = 'none';
-      } else {
-        volumeControl.style.display = 'flex';
-      }
-    });
-
-    // סליידר ווליום
+    // סליידר ווליום (0..1)
     volumeBar.addEventListener('input', (event) => {
-      volume = parseFloat(event.target.value);
+      const newVol = parseFloat(event.target.value);
+      // אם העלו מעל 0 => בטל מיוט
+      if (newVol > 0) {
+        isMuted = false;
+      }
+      volume = newVol;
+      updateVolumeIcons();
     });
 
+    // כפתור המיוט שבתוך התפריט
+    muteBtn.addEventListener('click', () => {
+      toggleMute();
+      updateVolumeIcons();
+    });
+
+    // החלפת ערך המשתיק
     function toggleMute() {
       isMuted = !isMuted;
-      mobileVolumeBtn.className = isMuted ? 'muted' : 'unmuted';
-      document.title = isMuted ? '🔇' : `${count}`;
     }
 
-    // מצב Stealth (מסתיר הכל וגם משתיק)
+    // פונקציה שמעדכנת את האייקונים (גם בכפתור הראשי, גם בכפתור הפנימי)
+    function updateVolumeIcons() {
+      // כפתור ראשי: אם מיוט = true או volume===0 => "muted", אחרת "unmuted"
+      if (isMuted || volume === 0) {
+        mobileVolumeBtn.className = 'muted';
+      } else {
+        mobileVolumeBtn.className = 'unmuted';
+      }
+
+      // כפתור המיוט שבתפריט
+      muteBtn.className = isMuted ? 'muted' : 'unmuted';
+
+      // עדכון title
+      document.title = (isMuted || volume === 0) ? '🔇' : `${count}`;
+    }
+
+    // מצב Stealth
     function toggleStealthMode() {
       isStealthMode = !isStealthMode;
       document.body.classList.toggle('stealth-mode', isStealthMode);
       if (isStealthMode) {
         isMuted = true;
-        mobileVolumeBtn.className = 'muted';
-        document.title = '🔇';
+        volume = 0;
+        updateVolumeIcons();
       } else {
+        // אם יוצאים מ-Stealth, אפשר להחזיר את volume ל-1 או להשאיר 0 לבחירתך
+        // פה דוגמה: מחזירים ל-1 ומכבים מיוט
+        volume = 1;
         isMuted = false;
-        mobileVolumeBtn.className = 'unmuted';
-        document.title = `${count}`;
+        updateVolumeIcons();
       }
     }
 
+    // מפעילים את הטיימר
     updateTimer();
+    // עדכון אייקונים ברגע שהדף נטען
+    updateVolumeIcons();
   </script>
 </body>
 </html>
