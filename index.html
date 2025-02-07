@@ -5,103 +5,116 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exercise Timer</title>
   <style>
-    /*****************************************************
-     *          עיצוב בסיסי של גוף העמוד (body)         *
-     *****************************************************/
+    /***************************************************
+     *   הגדרות בסיסיות של body (ללא overflow:hidden) *
+     ***************************************************/
     body {
-      margin: 0;               /* ללא שוליים */
-      padding: 0;              /* ללא ריווח פנימי */
-      background-color: black; /* רקע שחור */
-      color: white;            /* טקסט לבן */
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
       font-family: Arial, sans-serif;
-      transition: background-color 0.5s ease; /* מעבר חלק אם נצבע לאדום בזמן חצי הטיימר */
-      
-      /*
-        חשוב: לא משתמשים ב-overflow:hidden 
-        כך שאם האלמנטים גדולים מהחלון, יהיה פס גלילה טבעי.
-      */
+      transition: background-color 0.5s ease;
     }
 
-    /*****************************************************
-     *     עטיפת תוכן מרכזי (כדי למרכז אנכית/אופקית)    *
-     *****************************************************/
+    /***************************************************
+     *   קונטיינר מרכזי (טיימר וסטופר במרכז המסך)      *
+     ***************************************************/
     #mainContainer {
-      /*
-        הופכים את ה-#mainContainer לאזור Flex, 
-        שמרכז את התוכן אנכית ואופקית במסך.
-      */
-      display: flex;
-      flex-direction: column;      /* עמודה (טיימר למעלה, סטופר למטה) */
-      justify-content: center;     /* מרכז אנכית */
-      align-items: center;         /* מרכז אופקית */
-      
-      /* גובה מינימלי 100vh כדי למלא את גובה המסך */
+      /* גובה מינימלי 100vh שיכסה את כל המסך */
       min-height: 100vh;
-      box-sizing: border-box;      /* שיהיה יותר מדויק בחישובי מידות */
-      
-      /* נותנים מרווח תחתון, כדי שהכפתורים בתחתית לא "יתנגשו" */
+
+      /* Flex למרכז אנכי ואופקי */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      /* מרווח תחתון, כדי שהכפתורים בתחתית לא יחפפו */
       padding-bottom: 120px;
+      box-sizing: border-box;
     }
 
-    /*****************************************************
-     *                   הטיימר המרכזי                   *
-     *****************************************************/
+    /***************************************************
+     *                   הטיימר המרכזי                 *
+     ***************************************************/
     #timer {
       /*
-        font-size: 50vmin => 
-        50% מהצד הקטן של המסך (min(width,height)).
-        כך נשמר יחסיות במסכים רחבים או גבוהים.
+        הגודל הוא 50vmin => 50% מהצלע הקטנה ביותר
+        כך נשמר יחס יפה בין רוחב וגובה במסכים שונים.
       */
       font-size: 50vmin;
-      font-weight: bold;     /* טקסט עבה */
-      text-align: center;    /* ממורכז */
-      margin: 0;            /* ללא מרווחים חיצוניים */
+      font-weight: bold;
+      text-align: center;
+      margin: 0;
       padding: 0;
     }
 
-    /*****************************************************
-     *               סטופר (Stopwatch)                   *
-     *****************************************************/
+    /***************************************************
+     *         סטופר (Stopwatch) ומתחתיו כפתורים       *
+     ***************************************************/
     #stopwatch {
-      /* גמיש בעמודה, אבל כאן רק רכיב טקסט וכפתורים */
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 20px;  /* מרחק מהטיימר */
-      font-size: 2rem;   /* גודל גופן לסטופר */
+      margin-top: 20px;
+      font-size: 2rem;
     }
 
     #stopwatchControls {
-      margin-top: 10px; /* רווח בין הזמן לכפתורים */
-    }
-    #stopwatchControls button {
-      margin: 0 5px;    /* מרווח בין כפתורי START/RESET */
-      padding: 5px 10px;/* מעט ריווח פנימי */
-      font-size: 1rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #stopwatchControls button:hover {
-      background-color: rgba(255, 255, 255, 0.2);
+      margin-top: 10px; /* רווח בין תצוגת הסטופר לכפתורים */
     }
 
-    /*****************************************************
-     *   כפתורי התחתית: תיבת זמן + כפתור ווליום מובייל  *
-     *****************************************************/
+    #stopwatchControls button {
+      /* רווח בין כל כפתור */
+      margin: 0 5px;
+      /* ריווח פנימי */
+      padding: 5px 10px;
+      /* גודל טקסט */
+      font-size: 1rem;
+      /* אין גבול */
+      border: none;
+      /* פינות מעוגלות */
+      border-radius: 4px;
+      /* סמן לחיץ */
+      cursor: pointer;
+      /* מעבר רקע חלק */
+      transition: background-color 0.2s ease;
+    }
+
+    /*
+      בזמן לחיצה (active), משנים רקע מעט,
+      וכשהמשתמש משחרר - חוזר לצבע המקורי
+    */
+    #stopwatchControls button:active {
+      background-color: rgba(255,255,255,0.2);
+      transform: scale(0.98); /* אפקט קל של לחיצה */
+    }
+
+    /* מסירים outline כשכפתור בפוקוס */
+    #stopwatchControls button:focus {
+      outline: none;
+    }
+
+    /***************************************************
+     *  תיבת הזמן + כפתור ווליום (במובייל) בתחתית     *
+     ***************************************************/
     #bottomControls {
-      position: fixed;  /* יקובע תמיד בתחתית החלון */
-      bottom: 20px;     /* מרחק 20px מהתחתית */
+      /* ממקמים בתחתית */
+      position: fixed;
+      bottom: 20px;
       left: 0;
       right: 0;
-      
+      z-index: 2;
+
+      /* מרווח קצת מהצדדים */
+      margin: 0 20px;
+
+      /* Flex בשורה: תיבה משמאל, כפתור מימין */
       display: flex;
       flex-direction: row;
-      justify-content: space-between; /* תיבת זמן משמאל, כפתור ווליום מימין */
+      justify-content: space-between;
       align-items: center;
-      
-      margin: 0 20px;  /* קצת מרווח מהצדדים */
-      z-index: 2;      /* מעל שאר האלמנטים */
     }
 
     #defaultTimeInput {
@@ -115,22 +128,21 @@
       text-align: center;
     }
 
-    /* כפתור ווליום למובייל */
+    /* כפתור ווליום במובייל */
     #mobileVolumeBtn {
-      background: transparent; /* ללא רקע */
-      border: none;           /* ללא מסגרת */
+      background: transparent;
+      border: none;
       color: white;
-      font-size: 2rem;        /* גודל האימוג'י */
+      font-size: 2rem;
       cursor: pointer;
       padding: 4px;
-      border-radius: 50%;     
+      border-radius: 50%;
       box-shadow: 0 0 5px rgba(255,255,255,0.4);
       transition: box-shadow 0.3s ease;
     }
     #mobileVolumeBtn:hover {
       box-shadow: 0 0 10px rgba(255,255,255,0.6);
     }
-    /* מצב רמקול פעיל/מושתק בכפתור המובייל */
     #mobileVolumeBtn.unmuted::before {
       content: '🔊';
     }
@@ -138,35 +150,34 @@
       content: '🔇';
     }
 
-    /* מדיה קוורי: בדסקטופ (min-width: 600px) מסתירים את כפתור הווליום */
+    /* מסתירים את כפתור המובייל בדסקטופ */
     @media (min-width: 600px) {
       #mobileVolumeBtn {
-        display: none; 
+        display: none;
       }
     }
 
-    /*****************************************************
-     *    בקרת הווליום (volumeControl) - סליידר + מיוט  *
-     *****************************************************/
+    /***************************************************
+     *     בקרת הווליום - מופיעה בצד שמאל/במובייל     *
+     ***************************************************/
     #volumeControl {
-      position: absolute; 
-      top: 50%;               /* אמצע הגובה */
-      transform: translateY(-50%); /* מעלה חצי גובה כדי למרכז אנכית */
-      left: 0;               /* בצד שמאל */
-      
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 0;
       background-color: rgba(255, 255, 255, 0.1);
-      display: none;         /* מוסתר כברירת מחדל */
+      display: none;
       flex-direction: column;
       align-items: center;
       opacity: 0.8;
-      pointer-events: auto;  /* אפשר אינטרקציה בפנים */
+      pointer-events: auto;
       transition: 0.3s ease;
-      padding: 10px;         /* ריווח פנימי */
-      border-radius: 8px;    /* פינות עגולות */
+      padding: 10px;
+      border-radius: 8px;
     }
 
     #volumeBar {
-      writing-mode: bt-lr;    /* סליידר אנכי */
+      writing-mode: bt-lr;
       -webkit-appearance: slider-vertical;
       appearance: slider-vertical;
       width: 8px;
@@ -190,7 +201,6 @@
     #muteBtn:hover {
       background-color: rgba(255,255,255,0.3);
     }
-    /* כפתור מיוט בבקרת הווליום: 🔊 / 🔇 */
     #muteBtn.unmuted::before {
       content: '🔊';
     }
@@ -198,9 +208,9 @@
       content: '🔇';
     }
 
-    /*****************************************************
-     *       מצב הסוואה (stealth-mode) מוסתר כולו       *
-     *****************************************************/
+    /***************************************************
+     * מצב הסוואה (Stealth) שמסתיר הכל + מיוט        *
+     ***************************************************/
     .stealth-mode {
       background-color: black !important;
       color: black !important;
@@ -213,38 +223,39 @@
 </head>
 <body>
   
-  <!-- עוטף מרכזי שממרכז (טיימר וסטופר) -->
   <div id="mainContainer">
-    <!-- טיימר גדול ביחס למסך (50vmin) -->
+    <!-- טיימר גדול (עיקרי) -->
     <div id="timer">30</div>
-    
-    <!-- סטופר מתחת לטיימר -->
+
+    <!-- אזור הסטופר -->
     <div id="stopwatch">
       <div id="stopwatchDisplay">00:00:00</div>
       <div id="stopwatchControls">
         <button id="startStopwatch">START</button>
         <button id="resetStopwatch">RESET</button>
+        <!-- כפתור חדש שיעצור/יחדש את הטיימר המרכזי -->
+        <button id="pauseMainTimer">PAUSE TIMER</button>
       </div>
     </div>
   </div>
 
-  <!-- בקרת ווליום (בדסקטופ תופיע בהזזת עכבר שמאלה, במובייל – בלחיצה על כפתור) -->
+  <!-- בקרת הווליום (בדסקטופ - תופיע ב-Hover שמאל, במובייל - כפתור) -->
   <div id="volumeControl">
     <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
     <button id="muteBtn" class="unmuted"></button>
   </div>
 
-  <!-- אזור תחתון: תיבת זמן משמאל, כפתור ווליום מימין (רק במובייל) -->
+  <!-- בתחתית: תיבת זמן משמאל, כפתור ווליום מימין (רק במובייל) -->
   <div id="bottomControls">
     <input id="defaultTimeInput" type="number" min="1" placeholder="30">
     <button id="mobileVolumeBtn" class="unmuted"></button>
   </div>
 
   <script>
-    /***********************************************
-     *        משתנים וקישור לאלמנטים ב-DOM         *
-     ***********************************************/
-    const timerElement = document.getElementById('timer');        
+    /******************************************
+     * משתנים וקישור אלמנטים ב-DOM           *
+     ******************************************/
+    const timerElement = document.getElementById('timer');            
     const defaultTimeInput = document.getElementById('defaultTimeInput');
     const volumeControl = document.getElementById('volumeControl');
     const volumeBar = document.getElementById('volumeBar');
@@ -253,25 +264,25 @@
     const stopwatchDisplay = document.getElementById('stopwatchDisplay');
     const startStopwatchButton = document.getElementById('startStopwatch');
     const resetStopwatchButton = document.getElementById('resetStopwatch');
+    const pauseMainTimerButton = document.getElementById('pauseMainTimer');
 
-    // ערך הזמן ברירת מחדל
-    let defaultTime = 30;
-    // מונה הטיימר הנוכחי
-    let count = defaultTime;
+    let defaultTime = 30; // ברירת מחדל
+    let count = defaultTime; // מונה הטיימר
+    let volume = 1;         // ערך סליידר ווליום
+    let isMuted = false;    // האם מושתק
+    let isStealthMode = false; 
+    let timerPaused = false; // דגל האם הטיימר המרכזי בהפסקה
 
-    // שליטת עוצמה
-    let volume = 1;      
-    let isMuted = false; 
-    let isStealthMode = false;
+    // מזהה טיימאאוט של הטיימר, כדי שנוכל לעצור אותו
+    let timerTimeoutId = null; 
 
-    // סטופר
+    /******************************************
+     *          סטופר (Stopwatch)            *
+     ******************************************/
     let stopwatchInterval;
     let stopwatchRunning = false;
     let stopwatchTime = 0;
 
-    /***********************************************
-     *               פונקציות לסטופר               *
-     ***********************************************/
     function updateStopwatchDisplay() {
       const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
       const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
@@ -280,8 +291,10 @@
     }
 
     function startStopwatch() {
+      // לאחר כל לחיצה, מסירים פוקוס כדי שלא יישאר לחוץ
+      startStopwatchButton.blur();
+      
       if (!stopwatchRunning) {
-        // התקדמות של שניה כל פעם
         stopwatchInterval = setInterval(() => {
           stopwatchTime++;
           updateStopwatchDisplay();
@@ -289,7 +302,6 @@
         startStopwatchButton.textContent = 'PAUSE';
         stopwatchRunning = true;
       } else {
-        // עצירה
         clearInterval(stopwatchInterval);
         startStopwatchButton.textContent = 'START';
         stopwatchRunning = false;
@@ -297,6 +309,9 @@
     }
 
     function resetStopwatch() {
+      // מסירים פוקוס מהכפתור
+      resetStopwatchButton.blur();
+
       clearInterval(stopwatchInterval);
       stopwatchTime = 0;
       updateStopwatchDisplay();
@@ -304,33 +319,27 @@
       stopwatchRunning = false;
     }
 
-    // חיבור לאירועים
     startStopwatchButton.addEventListener('click', startStopwatch);
     resetStopwatchButton.addEventListener('click', resetStopwatch);
 
-    // הפעלה ראשונית
+    // מפעילים סטופר על טעינת העמוד
     startStopwatch();
 
-    /***********************************************
-     *           לוגיקת הטיימר + צלילים           *
-     ***********************************************/
-    // תיקיות צלילים
+    /******************************************
+     *     פונקציות לניהול הטיימר המרכזי      *
+     ******************************************/
     const halfSoundsDir = 'sounds/half/';
     const endSoundsDir = 'sounds/end/';
-
-    // שמות קבצים
     const halfSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
     const endSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
 
-    let lastHalfSoundIndex = -1; 
+    let lastHalfSoundIndex = -1;
     let lastEndSoundIndex = -1;
 
-    // פונקציה המחזירה את הווליום בפועל (0 אם מושתק)
     function getActualVolume() {
       return isMuted ? 0 : volume;
     }
 
-    // מנגן צליל אקראי, לא חוזר על אותו צליל פעמיים ברצף
     function playRandomSound(soundArray, directory, lastSoundIdx) {
       let randomIndex;
       do {
@@ -343,15 +352,17 @@
       return randomIndex;
     }
 
-    // מעדכן את התצוגה של הטיימר כל שניה
+    // פונקציה מעודכנת שמתחשבת בדגל pause
     function updateTimer() {
+      // אם הטיימר בהפסקה, לא עושים כלום
+      if (timerPaused) return;
+
       timerElement.textContent = count;
       document.title = (isMuted || volume === 0) ? '🔇' : String(count);
 
       if (count <= Math.floor(defaultTime / 2)) {
         document.body.style.backgroundColor = 'red';
         if (count === Math.floor(defaultTime / 2)) {
-          // מנגן צליל חצי
           lastHalfSoundIndex = playRandomSound(halfSounds, halfSoundsDir, lastHalfSoundIndex);
         }
       } else {
@@ -360,21 +371,41 @@
 
       count--;
       if (count < 0) {
-        // סוף
         lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
         count = defaultTime;
-        setTimeout(updateTimer, 3000); 
+        timerTimeoutId = setTimeout(updateTimer, 3000);
       } else {
-        setTimeout(updateTimer, 1000);
+        timerTimeoutId = setTimeout(updateTimer, 1000);
       }
     }
 
+    // מפעילים את הטיימר בפעם הראשונה
     updateTimer();
 
-    /***********************************************
-     *         שינוי זמן ברירת מחדל מהתיבה        *
-     ***********************************************/
+    // כפתור שמפסיק/מחדש את הטיימר
+    pauseMainTimerButton.addEventListener('click', () => {
+      // הסרת פוקוס
+      pauseMainTimerButton.blur();
+
+      timerPaused = !timerPaused;
+      if (timerPaused) {
+        // עוצרים
+        pauseMainTimerButton.textContent = 'RESUME TIMER';
+        // מנקים גם את ה-timeout שממתין
+        if (timerTimeoutId) clearTimeout(timerTimeoutId);
+      } else {
+        // ממשיכים
+        pauseMainTimerButton.textContent = 'PAUSE TIMER';
+        // מפעילים מחדש
+        updateTimer();
+      }
+    });
+
+    /******************************************
+     *    שינוי זמן ברירת מחדל בתיבת טקסט     *
+     ******************************************/
     defaultTimeInput.addEventListener('change', () => {
+      defaultTimeInput.blur();
       const newDefaultTime = parseInt(defaultTimeInput.value);
       if (newDefaultTime > 0) {
         defaultTime = newDefaultTime;
@@ -382,9 +413,10 @@
       }
     });
 
-    // גלגלת עכבר להגדלה/הקטנה
     defaultTimeInput.addEventListener('wheel', (event) => {
       event.preventDefault();
+      defaultTimeInput.blur();
+
       const step = event.deltaY < 0 ? 1 : -1;
       const currentValue = parseInt(defaultTimeInput.value) || defaultTime;
       const newValue = Math.max(1, currentValue + step);
@@ -393,9 +425,9 @@
       count = defaultTime;
     });
 
-    /***********************************************
-     *           מסך מלא (F או דאבל קליק)         *
-     ***********************************************/
+    /******************************************
+     *   מסך מלא (Double-Click או 'F')        *
+     ******************************************/
     document.body.addEventListener('dblclick', () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
@@ -412,41 +444,32 @@
           document.exitFullscreen();
         }
       }
-      // מקש M (או צ)
       else if (event.key.toLowerCase() === 'm' || event.key === 'צ') {
         toggleMute();
         updateVolumeIcons();
       }
-      // חץ למעלה => מגביר ווליום
       else if (event.key === 'ArrowUp') {
         volume = Math.min(1, volume + 0.1);
         isMuted = false; 
         updateVolumeIcons();
       }
-      // חץ למטה => מנמיך ווליום
       else if (event.key === 'ArrowDown') {
         volume = Math.max(0, volume - 0.1);
-        if (volume === 0) {
-          // אם ירדנו ל-0 אפשר לטעון שזה מיוט, לבחירתך
-        } else {
-          // אם עדיין מעל אפס, מבטלים מיוט
+        if (volume > 0) {
           isMuted = false;
         }
         updateVolumeIcons();
       }
-      // מקש Home => מצב הסוואה
       else if (event.key === 'Home') {
         toggleStealthMode();
       }
     });
 
-    /***********************************************
-     * בדסקטופ: מעבר עכבר לשמאל => מציג הסליידר   *
-     ***********************************************/
+    /******************************************
+     *   בדסקטופ: הזזת עכבר לשמאל => סליידר   *
+     ******************************************/
     document.body.addEventListener('mousemove', (event) => {
-      // רק במסכים רחבים (דסקטופ)
       if (window.innerWidth >= 600) {
-        // אם לא מושתק והווליום > 0, ועכבר קרוב לשמאל (נניח 5%)
         if (!isMuted && volume > 0 && event.clientX <= window.innerWidth * 0.05) {
           volumeControl.style.display = 'flex';
         } else {
@@ -455,11 +478,13 @@
       }
     });
 
-    /***********************************************
-     * מובייל: כפתור ווליום => מציג/סוגר הסליידר  *
-     ***********************************************/
+    /******************************************
+     *   מובייל: כפתור ווליום פותח הסליידר   *
+     ******************************************/
     mobileVolumeBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // מניעת סגירה מיידית בלחיצה "בחוץ"
+      e.stopPropagation();
+      mobileVolumeBtn.blur();
+
       if (volumeControl.style.display !== 'flex') {
         volumeControl.style.display = 'flex';
       } else {
@@ -467,7 +492,6 @@
       }
     });
 
-    // לחיצה "מחוץ" לסליידר => נסגור אותו
     document.addEventListener('click', (e) => {
       if (
         volumeControl.style.display === 'flex' &&
@@ -478,9 +502,9 @@
       }
     });
 
-    /***********************************************
-     *    סליידר ווליום + כפתור מיוט בפנים         *
-     ***********************************************/
+    /******************************************
+     *   סליידר ווליום + כפתור מיוט בפנים     *
+     ******************************************/
     volumeBar.addEventListener('input', (event) => {
       const newVol = parseFloat(event.target.value);
       if (newVol > 0) {
@@ -491,49 +515,43 @@
     });
 
     muteBtn.addEventListener('click', () => {
+      muteBtn.blur();
       toggleMute();
       updateVolumeIcons();
     });
 
-    // פונקציית החלפת מצב מיוט
     function toggleMute() {
       isMuted = !isMuted;
     }
 
-    // עדכון האייקונים לפי המצבים
     function updateVolumeIcons() {
-      // כפתור המובייל
       if (isMuted || volume === 0) {
         mobileVolumeBtn.className = 'muted';
       } else {
         mobileVolumeBtn.className = 'unmuted';
       }
-      // כפתור המיוט בתוך סליידר
       muteBtn.className = isMuted ? 'muted' : 'unmuted';
-      // כותרת העמוד
       document.title = (isMuted || volume === 0) ? '🔇' : String(count);
     }
 
-    /***********************************************
-     *         מצב הסוואה (Stealth Mode)          *
-     ***********************************************/
+    /******************************************
+     *       מצב הסוואה (Stealth Mode)        *
+     ******************************************/
     function toggleStealthMode() {
       isStealthMode = !isStealthMode;
       document.body.classList.toggle('stealth-mode', isStealthMode);
       if (isStealthMode) {
-        // מסתירים הכל ומשתיקים
         isMuted = true;
         volume = 0;
         updateVolumeIcons();
       } else {
-        // מחזירים עוצמה
         volume = 1;
         isMuted = false;
         updateVolumeIcons();
       }
     }
 
-    // סנכרון ראשוני של האייקונים עם המצב ההתחלתי
+    // עדכון אייקונים ראשוני
     updateVolumeIcons();
   </script>
 </body>
