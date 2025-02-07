@@ -42,19 +42,20 @@
             z-index: 2; /* Ensures the input box is above the volume control */
         }
 
+        /* בקרת ווליום (מיקום צד שמאל בדסקטופ, מוסתרת ברירת מחדל) */
         #volumeControl {
             position: absolute;
             left: 0;
             top: 40%;
             transform: translateY(-50%);
             width: 3%;
-            height: auto;
             background-color: transparent;
-            display: none;
+            display: none; /* יוצג ע"י mousemove בדסקטופ, או בלחיצה במובייל */
             flex-direction: column;
             align-items: center;
             opacity: 0.6;
-            pointer-events: none; /* Prevents mouse interactions outside visible area */
+            pointer-events: none; /* אין אינטראקציה מחוץ לאזור זה */
+            transition: 0.3s ease;
         }
 
         #volumeBar {
@@ -78,7 +79,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            pointer-events: auto;
+            pointer-events: auto; /* Ensure the mute icon is clickable */
             z-index: 3; /* Ensure the mute icon is above other elements */
         }
 
@@ -90,6 +91,7 @@
             content: '\1F507'; /* Speaker with X emoji for muted */
         }
 
+        /* מצב "הסוואה" (Hide UI) */
         .stealth-mode {
             background-color: black !important;
             color: black !important;
@@ -100,6 +102,7 @@
             display: none !important;
         }
 
+        /* סטופר */
         #stopwatch {
             display: flex;
             flex-direction: column;
@@ -125,26 +128,62 @@
             background-color: rgba(255, 255, 255, 0.2);
         }
 
+        /* כפתור הצגת ווליום – יוצג רק במובייל */
+        #mobileVolumeBtn {
+            display: none; /* מוסתר בדסקטופ */
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: #222;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        /* התאמות מובייל עם Media Query */
         @media (max-width: 600px) {
             #timer {
-                font-size: 25vh; /* קטן יותר בטלפונים */
+                font-size: 25vh; /* טיימר קטן יותר בטלפונים */
             }
 
+            /* הצגת כפתור ווליום במובייל */
+            #mobileVolumeBtn {
+                display: block;
+            }
+
+            /* מסתירים את בקרת הווליום בדסקטופ (שהיתה מוצגת ב-hover), 
+               אבל נפתח/נסגור אותה ע"י כפתור במובייל */
             #volumeControl {
                 top: auto;
-                bottom: 20%;
-                width: 20%;
+                bottom: 60px;
+                width: auto; 
+                left: auto;
+                right: 10px;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 10px;
+            }
+
+            /* נפחית קצת את גודל הסליידר למובייל */
+            #volumeBar {
+                height: 100px;
             }
 
             #defaultTimeInput {
-                left: 10px;
-                bottom: 60px; 
+                bottom: 110px; 
             }
         }
     </style>
 </head>
 <body>
+    <!-- טיימר מרכזי -->
     <div id="timer">30</div>
+
+    <!-- סטופר -->
     <div id="stopwatch">
         <div id="stopwatchDisplay">00:00:00</div>
         <div id="stopwatchControls">
@@ -152,7 +191,14 @@
             <button id="resetStopwatch">RESET</button>
         </div>
     </div>
+
+    <!-- שדה הזנת זמן -->
     <input id="defaultTimeInput" type="number" min="1" placeholder="30">
+
+    <!-- כפתור הצגת ווליום במובייל -->
+    <button id="mobileVolumeBtn">Volume</button>
+
+    <!-- בקרת ווליום -->
     <div id="volumeControl">
         <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
         <div id="muteIcon" class="unmuted"></div>
@@ -167,6 +213,7 @@
         const stopwatchDisplay = document.getElementById('stopwatchDisplay');
         const startStopwatchButton = document.getElementById('startStopwatch');
         const resetStopwatchButton = document.getElementById('resetStopwatch');
+        const mobileVolumeBtn = document.getElementById('mobileVolumeBtn');
 
         let defaultTime = 30;
         let count = defaultTime;
@@ -257,23 +304,25 @@
             count--;
 
             if (count < 0) {
-                // Play sound at the end of the timer
+                // Play sound at the end
                 lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
-                count = defaultTime; // Reset to default value
+                count = defaultTime; // Reset to default
                 setTimeout(updateTimer, 3000); // Wait 3 seconds before restarting
             } else {
                 setTimeout(updateTimer, 1000); // Update every second
             }
         }
 
+        // שינוי זמן ברירת מחדל ידנית
         defaultTimeInput.addEventListener('change', () => {
             const newDefaultTime = parseInt(defaultTimeInput.value);
             if (newDefaultTime > 0) {
                 defaultTime = newDefaultTime;
-                count = defaultTime; // Reset the current timer
+                count = defaultTime;
             }
         });
 
+        // שינוי זמן בעזרת גלגלת עכבר
         defaultTimeInput.addEventListener('wheel', (event) => {
             event.preventDefault();
             const step = event.deltaY < 0 ? 1 : -1;
@@ -284,6 +333,7 @@
             count = defaultTime;
         });
 
+        // כניסה/יציאה ממסך מלא עם לחיצה כפולה או F
         document.body.addEventListener('dblclick', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -312,19 +362,35 @@
             }
         });
 
-        // Show/hide volume control on mouse move
+        // בדסקטופ – הזזה לצד שמאל תציג את בקרת הווליום
         document.body.addEventListener('mousemove', (event) => {
+            // נניח שאם העכבר קרוב לשמאל <= 3% מרוחב המסך, נציג את בקרת הווליום
             if (event.clientX <= window.innerWidth * 0.03) {
                 volumeControl.style.display = 'flex';
             } else {
-                volumeControl.style.display = 'none';
+                // רק אם לא במובייל
+                if (window.innerWidth > 600) {
+                    volumeControl.style.display = 'none';
+                }
             }
         });
 
+        // במובייל – כפתור ייעודי לפתיחת/סגירת בקרת הווליום
+        mobileVolumeBtn.addEventListener('click', () => {
+            // אם כרגע "נסתר" (display:none), נציג כ-flex ולהיפך
+            if (volumeControl.style.display === 'flex') {
+                volumeControl.style.display = 'none';
+            } else {
+                volumeControl.style.display = 'flex';
+            }
+        });
+
+        // שינויים בווליום (סליידר)
         volumeBar.addEventListener('input', (event) => {
             volume = parseFloat(event.target.value);
         });
 
+        // אייקון מיוט
         muteIcon.addEventListener('click', toggleMute);
 
         function toggleMute() {
@@ -347,6 +413,7 @@
             }
         }
 
+        // מפעילים את הטיימר
         updateTimer();
     </script>
 </body>
