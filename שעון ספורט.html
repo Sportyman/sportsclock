@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl"> <!-- יישור טקסט מימין לשמאל -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exercise Timer</title>
   <style>
-    /* כל הסגנונות הקודמים ללא שינוי */
     body {
       margin: 0;
       padding: 0;
@@ -31,6 +30,11 @@
       text-align: center;
       margin: 0;
       padding: 0;
+    }
+
+    #repetitionStatus {
+      font-size: 2rem;
+      margin-top: 10px;
     }
 
     #stopwatch {
@@ -65,17 +69,21 @@
     }
 
     #bottomControls {
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      z-index: 2;
-      margin: 0 20px;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  margin: 0 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* הכפתור והתיבה מפוזרים משני הצדדים */
+  align-items: center;
+}
+
+#defaultTimeInput {
+  margin-right: auto; /* דוחף את התיבה לצד שמאל */
+}
 
     #defaultTimeInput {
       background-color: white;
@@ -86,7 +94,9 @@
       border-radius: 4px;
       width: 50px;
       text-align: center;
-    }
+    
+	}
+	
 
     #mobileVolumeBtn {
       background: transparent;
@@ -186,6 +196,7 @@
       color: white;
       display: none;
       transition: opacity 0.3s ease;
+      text-align: right; /* יישור טקסט מימין לשמאל */
     }
 
     #exercisePanel.visible {
@@ -199,6 +210,7 @@
       border-radius: 4px;
       cursor: pointer;
       transition: background 0.3s;
+      text-align: right; /* יישור טקסט מימין לשמאל */
     }
 
     .exercise-item:hover {
@@ -230,11 +242,37 @@
       padding: 15px;
       background: rgba(255,255,255,0.1);
       border-radius: 4px;
+      text-align: right; /* יישור טקסט מימין לשמאל */
     }
 
     .exercise-controls {
-      margin-top: 10px;
-    }
+  display: flex;
+  align-items: center;
+  gap: 10px; /* מרווח בין התיבות */
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* יישור הכותרות והתיבות למרכז */
+}
+
+.input-group label {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  color: #ccc;
+  text-align: center; /* יישור הטקסט במרכז */
+}
+
+.input-group input {
+  text-align: right; /* יישור הטקסט בתיבה מימין */
+}
+
+.separator {
+  font-size: 1.2rem;
+  margin: 0 10px;
+  color: #ccc;
+}
 
     .exercise-controls input {
       width: 50px;
@@ -253,12 +291,67 @@
         top: unset;
       }
     }
+
+    #addExerciseModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 1001;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    #addExerciseModal input, #addExerciseModal textarea {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    #globalRestTimeContainer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #globalRestTimeContainer input {
+      width: 60px;
+      text-align: center;
+    }
+
+    #globalRestTimeContainer button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #00cc66;
+      color: white;
+    }
+
+    .rest-time-applied {
+      animation: restTimeApplied 0.5s ease;
+    }
+
+    @keyframes restTimeApplied {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body>
   <div id="exercisePanel">
     <div class="exercise-list">
       <h3>תרגילים מומלצים:</h3>
+      <div id="globalRestTimeContainer">
+        <label for="globalRestTime">זמן מנוחה בין תרגילים (שניות):</label>
+        <input type="number" id="globalRestTime" value="2" min="0">
+        <button id="applyRestTimeBtn">החל</button>
+      </div>
+      <button id="addExerciseBtn">➕ הוסף תרגיל</button>
       <div id="exerciseContainer"></div>
       <button id="startProgram">התחל תוכנית אימון</button>
     </div>
@@ -267,13 +360,14 @@
       <h4>סטטוס נוכחי:</h4>
       <div id="currentExercise">לא פעיל</div>
       <div id="currentRep"></div>
+      <div id="selectedExercisesStatus">נבחרו 0 תרגילים</div>
+      <div id="selectedExercisesList"></div>
     </div>
   </div>
 
   <div id="mainContainer">
     <div id="timer">30</div>
-  <!-- הוספת האינדיקציה לחזרות -->
-  <div id="repetitionStatus" style="font-size: 2rem; margin-top: 10px;"></div>
+    <div id="repetitionStatus"></div>
 
     <div id="stopwatch">
       <div id="stopwatchDisplay">00:00:00</div>
@@ -295,6 +389,18 @@
     <button id="mobileVolumeBtn" class="unmuted"></button>
   </div>
 
+  <div id="addExerciseModal">
+    <h3>הוסף תרגיל חדש</h3>
+    <input type="text" id="newExerciseName" placeholder="שם התרגיל">
+    <input type="number" id="newExerciseDuration" placeholder="משך (שניות)">
+    <input type="number" id="newExerciseReps" placeholder="חזרות">
+    <input type="number" id="newExerciseRest" placeholder="זמן מנוחה (שניות)">
+    <textarea id="newExerciseDescription" placeholder="תיאור התרגיל"></textarea>
+    <button id="saveExerciseBtn">שמור תרגיל</button>
+    <button id="closeModalBtn">סגור</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <script>
     const timerElement = document.getElementById('timer');            
     const defaultTimeInput = document.getElementById('defaultTimeInput');
@@ -306,6 +412,12 @@
     const startStopwatchButton = document.getElementById('startStopwatch');
     const resetStopwatchButton = document.getElementById('resetStopwatch');
     const pauseMainTimerButton = document.getElementById('pauseMainTimer');
+    const addExerciseBtn = document.getElementById('addExerciseBtn');
+    const addExerciseModal = document.getElementById('addExerciseModal');
+    const saveExerciseBtn = document.getElementById('saveExerciseBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const globalRestTimeInput = document.getElementById('globalRestTime');
+    const applyRestTimeBtn = document.getElementById('applyRestTimeBtn');
 
     let defaultTime = 30;
     let count = defaultTime;
@@ -318,6 +430,39 @@
     let stopwatchInterval;
     let stopwatchRunning = false;
     let stopwatchTime = 0;
+
+    const exercises = [
+      {
+        id: 1,
+        name: "משיכת יד לאחור",
+        duration: 5,
+        reps: 10,
+        rest: 2,
+        description: "ישיבה זקופה, משיכת כתפיים אחורה"
+      },
+      {
+        id: 2,
+        name: "הרמת רגליים",
+        duration: 8,
+        reps: 6,
+        rest: 3,
+        description: "שכיבה על הגב, הרמת רגליים ל-90 מעלות"
+      }
+    ];
+
+    let currentProgram = [];
+    let currentExerciseIndex = 0;
+    let currentRep = 0;
+    let isResting = false;
+    let isWaiting = false;
+    let isProgramRunning = false;
+
+    const startSoundDir = 'sounds/start/';
+    const startSound = 'click.wav';
+    const endSoundsDir = 'sounds/end/';
+    const endSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
+
+    let lastEndSoundIndex = -1;
 
     function updateStopwatchDisplay() {
       const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
@@ -355,39 +500,6 @@
     resetStopwatchButton.addEventListener('click', resetStopwatch);
     startStopwatch();
 
-    const exercises = [
-      {
-        id: 1,
-        name: "משיכת יד לאחור",
-        duration: 5,
-        reps: 10,
-        rest: 2,
-        description: "ישיבה זקופה, משיכת כתפיים אחורה"
-      },
-      {
-        id: 2,
-        name: "הרמת רגליים",
-        duration: 8,
-        reps: 6,
-        rest: 3,
-        description: "שכיבה על הגב, הרמת רגליים ל-90 מעלות"
-      }
-    ];
-
-    let currentProgram = [];
-    let currentExerciseIndex = 0;
-    let currentRep = 0;
-    let isResting = false;
-    let isProgramRunning = false;
-    let isWaiting = false; // מצב המתנה בין תרגילים
-
-    const startSoundDir = 'sounds/start/'; // תיקיית הצלילים להתחלה
-    const startSound = 'click.wav'; // קובץ הצליל להתחלה
-    const endSoundsDir = 'sounds/end/'; // תיקיית הצלילים לסיום
-    const endSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav']; // קבצי צלילי סיום
-
-    let lastEndSoundIndex = -1;
-
     function getActualVolume() {
       return isMuted ? 0 : volume;
     }
@@ -405,45 +517,91 @@
     }
 
     function buildExerciseList() {
-      const container = document.getElementById('exerciseContainer');
-      container.innerHTML = exercises.map(ex => `
-        <div class="exercise-item" data-id="${ex.id}">
-          <h4>${ex.name}</h4>
-          <div>${ex.reps} חזרות X ${ex.duration} שניות</div>
-          <div class="exercise-controls">
-            <input type="number" min="1" value="${ex.duration}" class="exercise-duration" placeholder="זמן (שניות)">
-            <input type="number" min="1" value="${ex.reps}" class="exercise-reps" placeholder="חזרות">
-          </div>
+  const container = document.getElementById('exerciseContainer');
+  container.innerHTML = exercises.map(ex => `
+    <div class="exercise-item" data-id="${ex.id}">
+      <h4>${ex.name}</h4>
+      <div class="exercise-controls">
+        <div class="input-group">
+          <label>חזרות</label>
+          <input type="number" min="1" value="${ex.reps}" class="exercise-reps" placeholder="חזרות">
         </div>
-      `).join('');
+        <span class="separator">X</span>
+        <div class="input-group">
+          <label>שניות</label>
+          <input type="number" min="1" value="${ex.duration}" class="exercise-duration" placeholder="זמן (שניות)">
+        </div>
+      </div>
+    </div>
+  `).join('');
 
-      document.querySelectorAll('.exercise-item').forEach(item => {
-        item.addEventListener('click', () => {
-          item.classList.toggle('selected');
-          updateSelectedProgram();
-        });
-      });
+  // שאר הקוד נשאר ללא שינוי
 
-      document.querySelectorAll('.exercise-duration').forEach(input => {
-        input.addEventListener('change', (e) => {
-          const id = e.target.closest('.exercise-item').dataset.id;
-          const exercise = exercises.find(ex => ex.id == id);
-          exercise.duration = parseInt(e.target.value);
-        });
-      });
+  document.querySelectorAll('.exercise-item').forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('selected');
+      updateSelectedProgram();
+    });
+  });
 
-      document.querySelectorAll('.exercise-reps').forEach(input => {
-        input.addEventListener('change', (e) => {
-          const id = e.target.closest('.exercise-item').dataset.id;
-          const exercise = exercises.find(ex => ex.id == id);
-          exercise.reps = parseInt(e.target.value);
-        });
-      });
+  // הוספת מאזין אירוע ל-wheel עבור תיבות ההזנה
+  document.querySelectorAll('.exercise-duration').forEach(input => {
+    input.addEventListener('wheel', (e) => {
+      e.preventDefault(); // מונע גלילת דף
+      const step = e.deltaY < 0 ? 1 : -1; // קובע כיוון גלילה (למעלה = +1, למטה = -1)
+      const currentValue = parseInt(e.target.value) || 0; // מקבל את הערך הנוכחי
+      const newValue = Math.max(1, currentValue + step); // מחשב ערך חדש (לא פחות מ-1)
+      e.target.value = newValue; // מעדכן את הערך בתיבה
+
+      // מעדכן את הערך באובייקט התרגיל
+      const id = e.target.closest('.exercise-item').dataset.id;
+      const exercise = exercises.find(ex => ex.id == id);
+      exercise.duration = newValue;
+    });
+
+    input.addEventListener('dblclick', (e) => {
+      e.target.select(); // מסמן את הטקסט בתיבה בלחיצה כפולה
+    });
+  });
+
+  document.querySelectorAll('.exercise-reps').forEach(input => {
+    input.addEventListener('wheel', (e) => {
+      e.preventDefault(); // מונע גלילת דף
+      const step = e.deltaY < 0 ? 1 : -1; // קובע כיוון גלילה (למעלה = +1, למטה = -1)
+      const currentValue = parseInt(e.target.value) || 0; // מקבל את הערך הנוכחי
+      const newValue = Math.max(1, currentValue + step); // מחשב ערך חדש (לא פחות מ-1)
+      e.target.value = newValue; // מעדכן את הערך בתיבה
+
+      // מעדכן את הערך באובייקט התרגיל
+      const id = e.target.closest('.exercise-item').dataset.id;
+      const exercise = exercises.find(ex => ex.id == id);
+      exercise.reps = newValue;
+    });
+
+    input.addEventListener('dblclick', (e) => {
+      e.target.select(); // מסמן את הטקסט בתיבה בלחיצה כפולה
+    });
+  });
+
+  new Sortable(container, {
+    animation: 150,
+    onEnd: function (evt) {
+      updateSelectedProgram();
     }
+  });
+}
 
     function updateSelectedProgram() {
       currentProgram = Array.from(document.querySelectorAll('.exercise-item.selected'))
         .map(item => exercises.find(ex => ex.id == item.dataset.id));
+      
+      const selectedExercisesStatus = document.getElementById('selectedExercisesStatus');
+      selectedExercisesStatus.textContent = `נבחרו ${currentProgram.length} תרגילים`;
+
+      const selectedExercisesList = document.getElementById('selectedExercisesList');
+      selectedExercisesList.innerHTML = currentProgram.map((ex, index) => `
+        <div>${index + 1}. ${ex.name} (${ex.reps} חזרות X ${ex.duration} שניות)</div>
+      `).join('');
     }
 
     function startExerciseStep() {
@@ -462,7 +620,7 @@
           endProgram();
           return;
         }
-        exercise = currentProgram[currentExerciseIndex]; // עדכון התרגיל הנוכחי
+        exercise = currentProgram[currentExerciseIndex];
       }
 
       if (isResting) {
@@ -475,52 +633,51 @@
     }
 
     function startExercisePeriod(exercise) {
-  // השמעת צליל קליק בתחילת התרגיל
-  const audio = new Audio(`${startSoundDir}${startSound}`);
-  audio.volume = getActualVolume();
-  audio.play();
+      const audio = new Audio(`${startSoundDir}${startSound}`);
+      audio.volume = getActualVolume();
+      audio.play();
 
-  defaultTime = exercise.duration;
-  count = exercise.duration;
-  timerElement.textContent = count;
+      defaultTime = exercise.duration;
+      count = exercise.duration;
+      timerElement.textContent = count;
 
-  // עדכון האינדיקציה לחזרות
-  const repetitionStatus = document.getElementById('repetitionStatus');
-  repetitionStatus.textContent = `${currentRep + 1}/${exercise.reps}`;
+      const repetitionStatus = document.getElementById('repetitionStatus');
+      repetitionStatus.textContent = `${currentRep + 1}/${exercise.reps}`;
 
-  document.getElementById('currentExercise').textContent = `${exercise.name} (חזרה ${currentRep + 1}/${exercise.reps})`;
-  isResting = false;
-  isWaiting = false;
-  clearTimeout(timerTimeoutId);
-  timerTimeoutId = setInterval(() => {
-    count--;
-    timerElement.textContent = count;
-    if (count <= 0) {
-      clearInterval(timerTimeoutId);
-      lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex); // השמעת צליל סיום
-      isWaiting = true; // מתחיל זמן המתנה של 2 שניות
-      startExerciseStep();
+      document.getElementById('currentExercise').textContent = `${exercise.name} (חזרה ${currentRep + 1}/${exercise.reps})`;
+      isResting = false;
+      isWaiting = false;
+      clearTimeout(timerTimeoutId);
+      timerTimeoutId = setInterval(() => {
+        count--;
+        timerElement.textContent = count;
+        if (count <= 0) {
+          clearInterval(timerTimeoutId);
+          lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
+          isWaiting = true;
+          startExerciseStep();
+        }
+      }, 1000);
+
+      document.body.style.backgroundColor = 'black';
     }
-  }, 1000);
-
-  document.body.style.backgroundColor = 'black';
-}
 
     function startWaitingPeriod(exercise) {
-      timerElement.textContent = '0'; // מציג '0' בזמן המתנה
-      document.body.style.backgroundColor = 'red'; // רקע אדום בזמן המתנה
+      timerElement.textContent = '0';
+      document.body.style.backgroundColor = 'red';
       clearTimeout(timerTimeoutId);
       timerTimeoutId = setTimeout(() => {
         isWaiting = false;
-        isResting = true; // מתחיל זמן מנוחה
+        isResting = true;
         startExerciseStep();
-      }, 2000); // זמן המתנה של 2 שניות
+      }, 2000);
     }
 
     function startRestPeriod(exercise) {
-      timerElement.textContent = '0'; // מציג '0' בזמן מנוחה
-      document.body.style.backgroundColor = 'red'; // רקע אדום בזמן מנוחה
-      document.getElementById('currentExercise').textContent = `מנוחה (${exercise.rest} שניות)`;
+      const restTime = exercise.rest || parseInt(globalRestTimeInput.value);
+      timerElement.textContent = '0';
+      document.body.style.backgroundColor = 'red';
+      document.getElementById('currentExercise').textContent = `מנוחה (${restTime} שניות)`;
       clearTimeout(timerTimeoutId);
       timerTimeoutId = setInterval(() => {
         count--;
@@ -534,30 +691,73 @@
     }
 
     function endProgram() {
-  isProgramRunning = false;
-  document.getElementById('currentExercise').textContent = "תוכנית הושלמה!";
-  document.getElementById('repetitionStatus').textContent = ''; // איפוס האינדיקציה
-  resetTimerToDefault();
-  document.getElementById('startProgram').textContent = 'התחל תוכנית אימון';
-  document.getElementById('startProgram').classList.remove('stop');
-}
+      isProgramRunning = false;
+      document.getElementById('currentExercise').textContent = "תוכנית הושלמה!";
+      document.getElementById('repetitionStatus').textContent = '';
+      resetTimerToDefault();
+      document.getElementById('startProgram').textContent = 'התחל תוכנית אימון';
+      document.getElementById('startProgram').classList.remove('stop');
+    }
 
     function resetTimerToDefault() {
       defaultTime = 30;
       count = defaultTime;
       timerElement.textContent = count;
-      document.body.style.backgroundColor = 'black'; // רקע שחור במצב ברירת מחדל
-      clearTimeout(timerTimeoutId); // מפסיק את הטיימר הנוכחי
-      updateTimer(); // מתחיל לספור אוטומטית מחדש
+      document.getElementById('repetitionStatus').textContent = '';
+      document.body.style.backgroundColor = 'black';
+      clearTimeout(timerTimeoutId);
+      updateTimer();
     }
 
     document.body.addEventListener('mousemove', (event) => {
       if (window.innerWidth >= 600) {
-        if (event.clientX >= window.innerWidth - 300) {
+        if (event.clientX >= window.innerWidth - 340) { <!-- שינוי הסף ל-340 -->
           document.getElementById('exercisePanel').classList.add('visible');
         } else {
           document.getElementById('exercisePanel').classList.remove('visible');
         }
+      }
+    });
+
+    addExerciseBtn.addEventListener('click', () => {
+      addExerciseModal.style.display = 'block';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      addExerciseModal.style.display = 'none';
+    });
+
+    saveExerciseBtn.addEventListener('click', () => {
+      const name = document.getElementById('newExerciseName').value;
+      const duration = parseInt(document.getElementById('newExerciseDuration').value);
+      const reps = parseInt(document.getElementById('newExerciseReps').value);
+      const rest = parseInt(document.getElementById('newExerciseRest').value);
+      const description = document.getElementById('newExerciseDescription').value;
+
+      if (name) {
+        const newExercise = {
+          id: exercises.length + 1,
+          name,
+          duration: duration || 5,
+          reps: reps || 10,
+          rest: rest || 2,
+          description: description || "ללא תיאור"
+        };
+        exercises.push(newExercise);
+        buildExerciseList();
+        addExerciseModal.style.display = 'none';
+      } else {
+        alert("נא למלא את שם התרגיל!");
+      }
+    });
+
+    applyRestTimeBtn.addEventListener('click', () => {
+      const restTime = parseInt(globalRestTimeInput.value);
+      if (restTime >= 0) {
+        applyRestTimeBtn.classList.add('rest-time-applied');
+        setTimeout(() => {
+          applyRestTimeBtn.classList.remove('rest-time-applied');
+        }, 500);
       }
     });
 
@@ -640,14 +840,16 @@
     });
 
     defaultTimeInput.addEventListener('dblclick', (event) => {
-      event.stopPropagation();
+      event.target.select();
     });
 
-    document.body.addEventListener('dblclick', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
+    document.body.addEventListener('dblclick', (event) => {
+      if (event.target.tagName !== 'INPUT') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
       }
     });
 
