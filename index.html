@@ -1,21 +1,10 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl"> <!-- יישור טקסט מימין לשמאל -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exercise Timer</title>
-    <!-- ה-Manifet שלנו -->
-  <link rel="manifest" href="manifest.json">
-  
-  <!-- (אופציונלי) הגדרת צבע לנגן העליון באנדרואיד -->
-  <meta name="theme-color" content="#000000">
-      <!אייקון לאתר -->
-  <link rel="icon" href="/icon-192.png" type="image/png">
-
   <style>
-    /***************************************************
-     *   הגדרות בסיסיות של body (ללא overflow:hidden) *
-     ***************************************************/
     body {
       margin: 0;
       padding: 0;
@@ -25,32 +14,17 @@
       transition: background-color 0.5s ease;
     }
 
-    /***************************************************
-     *   קונטיינר מרכזי (טיימר וסטופר במרכז המסך)      *
-     ***************************************************/
     #mainContainer {
-      /* גובה מינימלי 100vh שיכסה את כל המסך */
       min-height: 100vh;
-
-      /* Flex למרכז אנכי ואופקי */
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-
-      /* מרווח תחתון, כדי שהכפתורים בתחתית לא יחפפו */
       padding-bottom: 120px;
       box-sizing: border-box;
     }
 
-    /***************************************************
-     *                   הטיימר המרכזי                 *
-     ***************************************************/
     #timer {
-      /*
-        הגודל הוא 50vmin => 50% מהצלע הקטנה ביותר
-        כך נשמר יחס יפה בין רוחב וגובה במסכים שונים.
-      */
       font-size: 50vmin;
       font-weight: bold;
       text-align: center;
@@ -58,9 +32,11 @@
       padding: 0;
     }
 
-    /***************************************************
-     *         סטופר (Stopwatch) ומתחתיו כפתורים       *
-     ***************************************************/
+    #repetitionStatus {
+      font-size: 2rem;
+      margin-top: 10px;
+    }
+
     #stopwatch {
       display: flex;
       flex-direction: column;
@@ -70,60 +46,44 @@
     }
 
     #stopwatchControls {
-      margin-top: 10px; /* רווח בין תצוגת הסטופר לכפתורים */
+      margin-top: 10px;
     }
 
     #stopwatchControls button {
-      /* רווח בין כל כפתור */
       margin: 0 5px;
-      /* ריווח פנימי */
       padding: 5px 10px;
-      /* גודל טקסט */
       font-size: 1rem;
-      /* אין גבול */
       border: none;
-      /* פינות מעוגלות */
       border-radius: 4px;
-      /* סמן לחיץ */
       cursor: pointer;
-      /* מעבר רקע חלק */
       transition: background-color 0.2s ease;
     }
 
-    /*
-      בזמן לחיצה (active), משנים רקע מעט,
-      וכשהמשתמש משחרר - חוזר לצבע המקורי
-    */
     #stopwatchControls button:active {
       background-color: rgba(255,255,255,0.2);
-      transform: scale(0.98); /* אפקט קל של לחיצה */
+      transform: scale(0.98);
     }
 
-    /* מסירים outline כשכפתור בפוקוס */
     #stopwatchControls button:focus {
       outline: none;
     }
 
-    /***************************************************
-     *  תיבת הזמן + כפתור ווליום (במובייל) בתחתית     *
-     ***************************************************/
     #bottomControls {
-      /* ממקמים בתחתית */
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      z-index: 2;
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  margin: 0 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* הכפתור והתיבה מפוזרים משני הצדדים */
+  align-items: center;
+}
 
-      /* מרווח קצת מהצדדים */
-      margin: 0 20px;
-
-      /* Flex בשורה: תיבה משמאל, כפתור מימין */
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
+#defaultTimeInput {
+  margin-right: auto; /* דוחף את התיבה לצד שמאל */
+}
 
     #defaultTimeInput {
       background-color: white;
@@ -134,9 +94,10 @@
       border-radius: 4px;
       width: 50px;
       text-align: center;
-    }
+    
+	}
+	
 
-    /* כפתור ווליום במובייל */
     #mobileVolumeBtn {
       background: transparent;
       border: none;
@@ -158,16 +119,12 @@
       content: '🔇';
     }
 
-    /* מסתירים את כפתור המובייל בדסקטופ */
     @media (min-width: 600px) {
       #mobileVolumeBtn {
         display: none;
       }
     }
 
-    /***************************************************
-     *     בקרת הווליום - מופיעה בצד שמאל/במובייל     *
-     ***************************************************/
     #volumeControl {
       position: absolute;
       top: 50%;
@@ -216,9 +173,6 @@
       content: '🔇';
     }
 
-    /***************************************************
-     * מצב הסוואה (Stealth) שמסתיר הכל + מיוט        *
-     ***************************************************/
     .stealth-mode {
       background-color: black !important;
       color: black !important;
@@ -227,42 +181,227 @@
     .stealth-mode * {
       display: none !important;
     }
+
+    #exercisePanel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100vh;
+      background: rgba(0,0,0,0.95);
+      padding: 20px;
+      border-left: 1px solid #444;
+      overflow-y: auto;
+      z-index: 1000;
+      color: white;
+      display: none;
+      transition: opacity 0.3s ease;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    #exercisePanel.visible {
+      display: block;
+    }
+
+    .exercise-item {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    .exercise-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .exercise-item.selected {
+      background: #0066cc;
+      border-color: #0052a3;
+    }
+
+    #startProgram {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background: #00cc66;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+
+    #startProgram.stop {
+      background: #cc0000;
+    }
+
+    .current-status {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    .exercise-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* מרווח בין התיבות */
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* יישור הכותרות והתיבות למרכז */
+}
+
+.input-group label {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  color: #ccc;
+  text-align: center; /* יישור הטקסט במרכז */
+}
+
+.input-group input {
+  text-align: right; /* יישור הטקסט בתיבה מימין */
+}
+
+.separator {
+  font-size: 1.2rem;
+  margin: 0 10px;
+  color: #ccc;
+}
+
+    .exercise-controls input {
+      width: 50px;
+      margin: 5px;
+      padding: 5px;
+      border: none;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      #exercisePanel {
+        width: 100%;
+        height: 50vh;
+        bottom: 0;
+        top: unset;
+      }
+    }
+
+    #addExerciseModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 1001;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    #addExerciseModal input, #addExerciseModal textarea {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    #globalRestTimeContainer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #globalRestTimeContainer input {
+      width: 60px;
+      text-align: center;
+    }
+
+    #globalRestTimeContainer button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #00cc66;
+      color: white;
+    }
+
+    .rest-time-applied {
+      animation: restTimeApplied 0.5s ease;
+    }
+
+    @keyframes restTimeApplied {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body>
-  
-  <div id="mainContainer">
-    <!-- טיימר גדול (עיקרי) -->
-    <div id="timer">30</div>
+  <div id="exercisePanel">
+    <div class="exercise-list">
+      <h3>תרגילים מומלצים:</h3>
+      <div id="globalRestTimeContainer">
+        <label for="globalRestTime">זמן מנוחה בין תרגילים (שניות):</label>
+        <input type="number" id="globalRestTime" value="2" min="0">
+        <button id="applyRestTimeBtn">החל</button>
+      </div>
+      <button id="addExerciseBtn">➕ הוסף תרגיל</button>
+      <div id="exerciseContainer"></div>
+      <button id="startProgram">התחל תוכנית אימון</button>
+    </div>
+    
+    <div class="current-status">
+      <h4>סטטוס נוכחי:</h4>
+      <div id="currentExercise">לא פעיל</div>
+      <div id="currentRep"></div>
+      <div id="selectedExercisesStatus">נבחרו 0 תרגילים</div>
+      <div id="selectedExercisesList"></div>
+    </div>
+  </div>
 
-    <!-- אזור הסטופר -->
+  <div id="mainContainer">
+    <div id="timer">30</div>
+    <div id="repetitionStatus"></div>
+
     <div id="stopwatch">
       <div id="stopwatchDisplay">00:00:00</div>
       <div id="stopwatchControls">
         <button id="startStopwatch">START</button>
         <button id="resetStopwatch">RESET</button>
-        <!-- כפתור חדש שיעצור/יחדש את הטיימר המרכזי -->
         <button id="pauseMainTimer">PAUSE TIMER</button>
       </div>
     </div>
   </div>
 
-  <!-- בקרת הווליום (בדסקטופ - תופיע ב-Hover שמאל, במובייל - כפתור) -->
   <div id="volumeControl">
     <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
     <button id="muteBtn" class="unmuted"></button>
   </div>
 
-  <!-- בתחתית: תיבת זמן משמאל, כפתור ווליום מימין (רק במובייל) -->
   <div id="bottomControls">
     <input id="defaultTimeInput" type="number" min="1" placeholder="30">
     <button id="mobileVolumeBtn" class="unmuted"></button>
   </div>
 
+  <div id="addExerciseModal">
+    <h3>הוסף תרגיל חדש</h3>
+    <input type="text" id="newExerciseName" placeholder="שם התרגיל">
+    <input type="number" id="newExerciseDuration" placeholder="משך (שניות)">
+    <input type="number" id="newExerciseReps" placeholder="חזרות">
+    <input type="number" id="newExerciseRest" placeholder="זמן מנוחה (שניות)">
+    <textarea id="newExerciseDescription" placeholder="תיאור התרגיל"></textarea>
+    <button id="saveExerciseBtn">שמור תרגיל</button>
+    <button id="closeModalBtn">סגור</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <script>
-    /******************************************
-     * משתנים וקישור אלמנטים ב-DOM           *
-     ******************************************/
     const timerElement = document.getElementById('timer');            
     const defaultTimeInput = document.getElementById('defaultTimeInput');
     const volumeControl = document.getElementById('volumeControl');
@@ -273,23 +412,73 @@
     const startStopwatchButton = document.getElementById('startStopwatch');
     const resetStopwatchButton = document.getElementById('resetStopwatch');
     const pauseMainTimerButton = document.getElementById('pauseMainTimer');
+    const addExerciseBtn = document.getElementById('addExerciseBtn');
+    const addExerciseModal = document.getElementById('addExerciseModal');
+    const saveExerciseBtn = document.getElementById('saveExerciseBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const globalRestTimeInput = document.getElementById('globalRestTime');
+    const applyRestTimeBtn = document.getElementById('applyRestTimeBtn');
 
-    let defaultTime = 30; // ברירת מחדל
-    let count = defaultTime; // מונה הטיימר
-    let volume = 1;         // ערך סליידר ווליום
-    let isMuted = false;    // האם מושתק
+    let defaultTime = 30;
+    let count = defaultTime;
+    let volume = 1;
+    let isMuted = false;
     let isStealthMode = false; 
-    let timerPaused = false; // דגל האם הטיימר המרכזי בהפסקה
+    let timerPaused = false;
+    let timerTimeoutId = null;
 
-    // מזהה טיימאאוט של הטיימר, כדי שנוכל לעצור אותו
-    let timerTimeoutId = null; 
-
-    /******************************************
-     *          סטופר (Stopwatch)            *
-     ******************************************/
     let stopwatchInterval;
     let stopwatchRunning = false;
     let stopwatchTime = 0;
+
+    const exercises = [
+  {
+    id: 1,
+    name: "הנפת יד לאחור",
+    duration: 5,
+    reps: 10,
+    rest: 2,
+    description: "ישיבה זקופה, משיכת כתפיים אחורה"
+  },
+  {
+    id: 2,
+    name: "שליחת יד לצד נגדי",
+    duration: 5,
+    reps: 10,
+    rest: 3,
+    description: "שכיבה על הגב, הרמת רגליים ל-90 מעלות"
+  },
+  {
+    id: 3,
+    name: "הנפת יד בעמידה - ימין",
+    duration: 5,
+    reps: 10,
+    rest: 2,
+    description: "שכיבה על הגב, כפיפות בטן מבוקרות"
+  },
+  {
+    id: 4,
+    name: "הנפת יד בעמידה - שמאל",
+    duration: 5,
+    reps: 10,
+    rest: 3,
+    description: "שכיבות שמיכה בטכניקה נכונה"
+  }
+];
+
+    let currentProgram = [];
+    let currentExerciseIndex = 0;
+    let currentRep = 0;
+    let isResting = false;
+    let isWaiting = false;
+    let isProgramRunning = false;
+
+    const startSoundDir = 'sounds/start/';
+    const startSound = 'click.wav';
+    const endSoundsDir = 'sounds/end/';
+    const endSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
+
+    let lastEndSoundIndex = -1;
 
     function updateStopwatchDisplay() {
       const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
@@ -299,9 +488,7 @@
     }
 
     function startStopwatch() {
-      // לאחר כל לחיצה, מסירים פוקוס כדי שלא יישאר לחוץ
       startStopwatchButton.blur();
-      
       if (!stopwatchRunning) {
         stopwatchInterval = setInterval(() => {
           stopwatchTime++;
@@ -317,9 +504,7 @@
     }
 
     function resetStopwatch() {
-      // מסירים פוקוס מהכפתור
       resetStopwatchButton.blur();
-
       clearInterval(stopwatchInterval);
       stopwatchTime = 0;
       updateStopwatchDisplay();
@@ -329,20 +514,7 @@
 
     startStopwatchButton.addEventListener('click', startStopwatch);
     resetStopwatchButton.addEventListener('click', resetStopwatch);
-
-    // מפעילים סטופר על טעינת העמוד
     startStopwatch();
-
-    /******************************************
-     *     פונקציות לניהול הטיימר המרכזי      *
-     ******************************************/
-    const halfSoundsDir = 'sounds/half/';
-    const endSoundsDir = 'sounds/end/';
-    const halfSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
-    const endSounds = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.wav', 'sound5.wav'];
-
-    let lastHalfSoundIndex = -1;
-    let lastEndSoundIndex = -1;
 
     function getActualVolume() {
       return isMuted ? 0 : volume;
@@ -360,58 +532,309 @@
       return randomIndex;
     }
 
-    // פונקציה מעודכנת שמתחשבת בדגל pause
-    function updateTimer() {
-      // אם הטיימר בהפסקה, לא עושים כלום
-      if (timerPaused) return;
+    function buildExerciseList() {
+  const container = document.getElementById('exerciseContainer');
+  container.innerHTML = exercises.map(ex => `
+    <div class="exercise-item" data-id="${ex.id}">
+      <h4>${ex.name}</h4>
+      <div class="exercise-controls">
+        <div class="input-group">
+          <label>חזרות</label>
+          <input type="number" min="1" value="${ex.reps}" class="exercise-reps" placeholder="חזרות">
+        </div>
+        <span class="separator">X</span>
+        <div class="input-group">
+          <label>שניות</label>
+          <input type="number" min="1" value="${ex.duration}" class="exercise-duration" placeholder="זמן (שניות)">
+        </div>
+      </div>
+    </div>
+  `).join('');
 
-      timerElement.textContent = count;
-      document.title = (isMuted || volume === 0) ? '🔇' : String(count);
+  // שאר הקוד נשאר ללא שינוי
 
-      if (count <= Math.floor(defaultTime / 2)) {
-        document.body.style.backgroundColor = 'red';
-        if (count === Math.floor(defaultTime / 2)) {
-          lastHalfSoundIndex = playRandomSound(halfSounds, halfSoundsDir, lastHalfSoundIndex);
-        }
-      } else {
-        document.body.style.backgroundColor = 'black';
+  document.querySelectorAll('.exercise-item').forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('selected');
+      updateSelectedProgram();
+    });
+  });
+
+  // הוספת מאזין אירוע ל-wheel עבור תיבות ההזנה
+  document.querySelectorAll('.exercise-duration').forEach(input => {
+    input.addEventListener('wheel', (e) => {
+      e.preventDefault(); // מונע גלילת דף
+      const step = e.deltaY < 0 ? 1 : -1; // קובע כיוון גלילה (למעלה = +1, למטה = -1)
+      const currentValue = parseInt(e.target.value) || 0; // מקבל את הערך הנוכחי
+      const newValue = Math.max(1, currentValue + step); // מחשב ערך חדש (לא פחות מ-1)
+      e.target.value = newValue; // מעדכן את הערך בתיבה
+
+      // מעדכן את הערך באובייקט התרגיל
+      const id = e.target.closest('.exercise-item').dataset.id;
+      const exercise = exercises.find(ex => ex.id == id);
+      exercise.duration = newValue;
+    });
+
+    input.addEventListener('dblclick', (e) => {
+      e.target.select(); // מסמן את הטקסט בתיבה בלחיצה כפולה
+    });
+  });
+
+  document.querySelectorAll('.exercise-reps').forEach(input => {
+    input.addEventListener('wheel', (e) => {
+      e.preventDefault(); // מונע גלילת דף
+      const step = e.deltaY < 0 ? 1 : -1; // קובע כיוון גלילה (למעלה = +1, למטה = -1)
+      const currentValue = parseInt(e.target.value) || 0; // מקבל את הערך הנוכחי
+      const newValue = Math.max(1, currentValue + step); // מחשב ערך חדש (לא פחות מ-1)
+      e.target.value = newValue; // מעדכן את הערך בתיבה
+
+      // מעדכן את הערך באובייקט התרגיל
+      const id = e.target.closest('.exercise-item').dataset.id;
+      const exercise = exercises.find(ex => ex.id == id);
+      exercise.reps = newValue;
+    });
+
+    input.addEventListener('dblclick', (e) => {
+      e.target.select(); // מסמן את הטקסט בתיבה בלחיצה כפולה
+    });
+  });
+
+  new Sortable(container, {
+    animation: 150,
+    onEnd: function (evt) {
+      updateSelectedProgram();
+    }
+  });
+}
+
+    function updateSelectedProgram() {
+      currentProgram = Array.from(document.querySelectorAll('.exercise-item.selected'))
+        .map(item => exercises.find(ex => ex.id == item.dataset.id));
+      
+      const selectedExercisesStatus = document.getElementById('selectedExercisesStatus');
+      selectedExercisesStatus.textContent = `נבחרו ${currentProgram.length} תרגילים`;
+
+      const selectedExercisesList = document.getElementById('selectedExercisesList');
+      selectedExercisesList.innerHTML = currentProgram.map((ex, index) => `
+        <div>${index + 1}. ${ex.name} (${ex.reps} חזרות X ${ex.duration} שניות)</div>
+      `).join('');
+    }
+
+    function startExerciseStep() {
+      if (!isProgramRunning) return;
+
+      let exercise = currentProgram[currentExerciseIndex];
+      if (!exercise) {
+        endProgram();
+        return;
       }
 
-      count--;
-      if (count < 0) {
-        lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
-        count = defaultTime;
-        timerTimeoutId = setTimeout(updateTimer, 3000);
+      if (currentRep >= exercise.reps) {
+        currentExerciseIndex++;
+        currentRep = 0;
+        if (currentExerciseIndex >= currentProgram.length) {
+          endProgram();
+          return;
+        }
+        exercise = currentProgram[currentExerciseIndex];
+      }
+
+      if (isResting) {
+        startRestPeriod(exercise);
+      } else if (isWaiting) {
+        startWaitingPeriod(exercise);
       } else {
-        timerTimeoutId = setTimeout(updateTimer, 1000);
+        startExercisePeriod(exercise);
       }
     }
 
-    // מפעילים את הטיימר בפעם הראשונה
-    updateTimer();
+    function startExercisePeriod(exercise) {
+      const audio = new Audio(`${startSoundDir}${startSound}`);
+      audio.volume = getActualVolume();
+      audio.play();
 
-    // כפתור שמפסיק/מחדש את הטיימר
+      defaultTime = exercise.duration;
+      count = exercise.duration;
+      timerElement.textContent = count;
+
+      const repetitionStatus = document.getElementById('repetitionStatus');
+      repetitionStatus.textContent = `${currentRep + 1}/${exercise.reps}`;
+
+      document.getElementById('currentExercise').textContent = `${exercise.name} (חזרה ${currentRep + 1}/${exercise.reps})`;
+      isResting = false;
+      isWaiting = false;
+      clearTimeout(timerTimeoutId);
+      timerTimeoutId = setInterval(() => {
+        count--;
+        timerElement.textContent = count;
+        if (count <= 0) {
+          clearInterval(timerTimeoutId);
+          lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
+          isWaiting = true;
+          startExerciseStep();
+        }
+      }, 1000);
+
+      document.body.style.backgroundColor = 'black';
+    }
+
+    function startWaitingPeriod(exercise) {
+      timerElement.textContent = '0';
+      document.body.style.backgroundColor = 'red';
+      clearTimeout(timerTimeoutId);
+      timerTimeoutId = setTimeout(() => {
+        isWaiting = false;
+        isResting = true;
+        startExerciseStep();
+      }, 2000);
+    }
+
+    function startRestPeriod(exercise) {
+      const restTime = exercise.rest || parseInt(globalRestTimeInput.value);
+      timerElement.textContent = '0';
+      document.body.style.backgroundColor = 'red';
+      document.getElementById('currentExercise').textContent = `מנוחה (${restTime} שניות)`;
+      clearTimeout(timerTimeoutId);
+      timerTimeoutId = setInterval(() => {
+        count--;
+        if (count <= 0) {
+          clearInterval(timerTimeoutId);
+          currentRep++;
+          isResting = false;
+          startExerciseStep();
+        }
+      }, 1000);
+    }
+
+    function endProgram() {
+      isProgramRunning = false;
+      document.getElementById('currentExercise').textContent = "תוכנית הושלמה!";
+      document.getElementById('repetitionStatus').textContent = '';
+      resetTimerToDefault();
+      document.getElementById('startProgram').textContent = 'התחל תוכנית אימון';
+      document.getElementById('startProgram').classList.remove('stop');
+    }
+
+    function resetTimerToDefault() {
+      defaultTime = 30;
+      count = defaultTime;
+      timerElement.textContent = count;
+      document.getElementById('repetitionStatus').textContent = '';
+      document.body.style.backgroundColor = 'black';
+      clearTimeout(timerTimeoutId);
+      updateTimer();
+    }
+
+    document.body.addEventListener('mousemove', (event) => {
+      if (window.innerWidth >= 600) {
+        if (event.clientX >= window.innerWidth - 340) { <!-- שינוי הסף ל-340 -->
+          document.getElementById('exercisePanel').classList.add('visible');
+        } else {
+          document.getElementById('exercisePanel').classList.remove('visible');
+        }
+      }
+    });
+
+    addExerciseBtn.addEventListener('click', () => {
+      addExerciseModal.style.display = 'block';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      addExerciseModal.style.display = 'none';
+    });
+
+    saveExerciseBtn.addEventListener('click', () => {
+      const name = document.getElementById('newExerciseName').value;
+      const duration = parseInt(document.getElementById('newExerciseDuration').value);
+      const reps = parseInt(document.getElementById('newExerciseReps').value);
+      const rest = parseInt(document.getElementById('newExerciseRest').value);
+      const description = document.getElementById('newExerciseDescription').value;
+
+      if (name) {
+        const newExercise = {
+          id: exercises.length + 1,
+          name,
+          duration: duration || 5,
+          reps: reps || 10,
+          rest: rest || 2,
+          description: description || "ללא תיאור"
+        };
+        exercises.push(newExercise);
+        buildExerciseList();
+        addExerciseModal.style.display = 'none';
+      } else {
+        alert("נא למלא את שם התרגיל!");
+      }
+    });
+
+    applyRestTimeBtn.addEventListener('click', () => {
+      const restTime = parseInt(globalRestTimeInput.value);
+      if (restTime >= 0) {
+        applyRestTimeBtn.classList.add('rest-time-applied');
+        setTimeout(() => {
+          applyRestTimeBtn.classList.remove('rest-time-applied');
+        }, 500);
+      }
+    });
+
+    buildExerciseList();
+    const startProgramButton = document.getElementById('startProgram');
+    startProgramButton.addEventListener('click', () => {
+      if (isProgramRunning) {
+        endProgram();
+        return;
+      }
+
+      if (currentProgram.length === 0) return alert("נא לבחור תרגילים!");
+      isProgramRunning = true;
+      currentExerciseIndex = 0;
+      currentRep = 0;
+      isResting = false;
+      isWaiting = false;
+      startProgramButton.textContent = 'עצור תוכנית אימון';
+      startProgramButton.classList.add('stop');
+      startExerciseStep();
+    });
+
+    function updateTimer() {
+      if (timerPaused) return;
+
+      if (!isProgramRunning) {
+        timerElement.textContent = count;
+        document.title = (isMuted || volume === 0) ? '🔇' : String(count);
+
+        if (count <= Math.floor(defaultTime / 2)) {
+          document.body.style.backgroundColor = 'red';
+          if (count === Math.floor(defaultTime / 2)) {
+            lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
+          }
+        } else {
+          document.body.style.backgroundColor = 'black';
+        }
+
+        count--;
+        if (count < 0) {
+          lastEndSoundIndex = playRandomSound(endSounds, endSoundsDir, lastEndSoundIndex);
+          count = defaultTime;
+          timerTimeoutId = setTimeout(updateTimer, 3000);
+        } else {
+          timerTimeoutId = setTimeout(updateTimer, 1000);
+        }
+      }
+    }
+
     pauseMainTimerButton.addEventListener('click', () => {
-      // הסרת פוקוס
       pauseMainTimerButton.blur();
-
       timerPaused = !timerPaused;
       if (timerPaused) {
-        // עוצרים
         pauseMainTimerButton.textContent = 'RESUME TIMER';
-        // מנקים גם את ה-timeout שממתין
         if (timerTimeoutId) clearTimeout(timerTimeoutId);
       } else {
-        // ממשיכים
         pauseMainTimerButton.textContent = 'PAUSE TIMER';
-        // מפעילים מחדש
         updateTimer();
       }
     });
 
-    /******************************************
-     *    שינוי זמן ברירת מחדל בתיבת טקסט     *
-     ******************************************/
     defaultTimeInput.addEventListener('change', () => {
       defaultTimeInput.blur();
       const newDefaultTime = parseInt(defaultTimeInput.value);
@@ -424,7 +847,6 @@
     defaultTimeInput.addEventListener('wheel', (event) => {
       event.preventDefault();
       defaultTimeInput.blur();
-
       const step = event.deltaY < 0 ? 1 : -1;
       const currentValue = parseInt(defaultTimeInput.value) || defaultTime;
       const newValue = Math.max(1, currentValue + step);
@@ -433,14 +855,17 @@
       count = defaultTime;
     });
 
-    /******************************************
-     *   מסך מלא (Double-Click או 'F')        *
-     ******************************************/
-    document.body.addEventListener('dblclick', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
+    defaultTimeInput.addEventListener('dblclick', (event) => {
+      event.target.select();
+    });
+
+    document.body.addEventListener('dblclick', (event) => {
+      if (event.target.tagName !== 'INPUT') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
       }
     });
 
@@ -473,12 +898,11 @@
       }
     });
 
-    /******************************************
-     *   בדסקטופ: הזזת עכבר לשמאל => סליידר   *
-     ******************************************/
     document.body.addEventListener('mousemove', (event) => {
       if (window.innerWidth >= 600) {
-        if (!isMuted && volume > 0 && event.clientX <= window.innerWidth * 0.05) {
+        if (isMuted) {
+          volumeControl.style.display = 'none';
+        } else if (volume > 0 && event.clientX <= window.innerWidth * 0.05) {
           volumeControl.style.display = 'flex';
         } else {
           volumeControl.style.display = 'none';
@@ -486,33 +910,18 @@
       }
     });
 
-    /******************************************
-     *   מובייל: כפתור ווליום פותח הסליידר   *
-     ******************************************/
     mobileVolumeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       mobileVolumeBtn.blur();
-
-      if (volumeControl.style.display !== 'flex') {
-        volumeControl.style.display = 'flex';
-      } else {
-        volumeControl.style.display = 'none';
-      }
+      volumeControl.style.display = volumeControl.style.display === 'flex' ? 'none' : 'flex';
     });
 
     document.addEventListener('click', (e) => {
-      if (
-        volumeControl.style.display === 'flex' &&
-        e.target !== mobileVolumeBtn &&
-        !volumeControl.contains(e.target)
-      ) {
+      if (volumeControl.style.display === 'flex' && e.target !== mobileVolumeBtn && !volumeControl.contains(e.target)) {
         volumeControl.style.display = 'none';
       }
     });
 
-    /******************************************
-     *   סליידר ווליום + כפתור מיוט בפנים     *
-     ******************************************/
     volumeBar.addEventListener('input', (event) => {
       const newVol = parseFloat(event.target.value);
       if (newVol > 0) {
@@ -542,9 +951,6 @@
       document.title = (isMuted || volume === 0) ? '🔇' : String(count);
     }
 
-    /******************************************
-     *       מצב הסוואה (Stealth Mode)        *
-     ******************************************/
     function toggleStealthMode() {
       isStealthMode = !isStealthMode;
       document.body.classList.toggle('stealth-mode', isStealthMode);
@@ -559,8 +965,8 @@
       }
     }
 
-    // עדכון אייקונים ראשוני
     updateVolumeIcons();
+    updateTimer();
   </script>
 </body>
 </html>
