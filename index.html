@@ -535,7 +535,6 @@ let countdownInterval = null; // משתנה שישמור את ה-interval של �
         startStopwatchButton.textContent = 'START';
         stopwatchRunning = false;
       }
-	  savePreferences();
     }
 
     function resetStopwatch() {
@@ -545,7 +544,6 @@ let countdownInterval = null; // משתנה שישמור את ה-interval של �
       updateStopwatchDisplay();
       startStopwatchButton.textContent = 'START';
       stopwatchRunning = false;
-	  savePreferences();
     }
 
     startStopwatchButton.addEventListener('click', startStopwatch);
@@ -649,7 +647,6 @@ let countdownInterval = null; // משתנה שישמור את ה-interval של �
       selectedExercisesList.innerHTML = currentProgram.map((ex, index) => `
         <div>${index + 1}. ${ex.name} (${ex.reps} חזרות X ${ex.duration} שניות)</div>
       `).join('');
-	  savePreferences();
     }
 
     function startExerciseStep() {
@@ -1011,7 +1008,6 @@ let countdownInterval = null; // משתנה שישמור את ה-interval של �
 
     function toggleMute() {
       isMuted = !isMuted;
-	    savePreferences(); // <-- הוסף שורה זו
     }
 
     function updateVolumeIcons() {
@@ -1022,7 +1018,6 @@ let countdownInterval = null; // משתנה שישמור את ה-interval של �
       }
       muteBtn.className = isMuted ? 'muted' : 'unmuted';
       document.title = (isMuted || volume === 0) ? '🔇' : String(count);
-	  savePreferences();
     }
 
     function toggleStealthMode() {
@@ -1064,160 +1059,8 @@ if (isMobileDevice()) {
 }
 
     // ========== סוף הקוד החדש ==========
-// ---------- מערכת שמירת העדפות ----------
-/* ========== מערכת שמירת העדפות ========== */
-function savePreferences() {
-  if (isMobileDevice()) return;
-  
-  try {
-    const preferences = {
-      volume: volume,
-      isMuted: isMuted,
-      defaultTime: defaultTime,
-      currentProgram: currentProgram.map(ex => ({...ex})), // יצירת עותק כדי למנוע בעיות הפניה
-      exercises: exercises.map(ex => ({...ex})), // יצירת עותק
-      stopwatchTime: stopwatchTime,
-      stopwatchRunning: stopwatchRunning
-    };
-    
-    localStorage.setItem('exerciseTimerPrefs', JSON.stringify(preferences));
-  } catch (e) {
-    console.error('שגיאה בשמירת העדפות:', e);
-  }
-}
-
-function loadPreferences() {
-  if (isMobileDevice()) return;
-  
-  try {
-    const savedPrefs = localStorage.getItem('exerciseTimerPrefs');
-    if (!savedPrefs) return;
-
-    const prefs = JSON.parse(savedPrefs);
-    
-    if (prefs.volume !== undefined) volume = prefs.volume;
-    if (prefs.isMuted !== undefined) isMuted = prefs.isMuted;
-    if (prefs.defaultTime !== undefined) {
-      defaultTime = prefs.defaultTime;
-      defaultTimeInput.value = defaultTime;
-    }
-    
-    if (prefs.exercises) {
-      exercises = prefs.exercises;
-      setTimeout(buildExerciseList, 100); // נותן זמן לטעינת ה-DOM
-    }
-    
-    if (prefs.currentProgram) {
-      currentProgram = prefs.currentProgram;
-      setTimeout(updateSelectedProgram, 100);
-    }
-    
-    if (prefs.stopwatchTime !== undefined) {
-      stopwatchTime = prefs.stopwatchTime;
-      updateStopwatchDisplay();
-    }
-    
-    if (prefs.stopwatchRunning) {
-      setTimeout(startStopwatch, 100);
-    }
-  } catch (e) {
-    console.error('שגיאה בטעינת העדפות:', e);
-  }
-}
-// טען העדפות עם טעינת הדף
-loadPreferences();
-
-// הפעלת Wake Lock עם טעינת הדף (מובייל בלבד)
-acquireWakeLock();
-
-// אירועים לסגירת הדף (מובייל בלבד)
-if (isMobileDevice()) {
-  // ... הקוד הקיים לאירועי מובייל ...
-} else {
-  // בדסקטופ - שמור העדפות לפני סגירה
-  window.addEventListener('beforeunload', savePreferences);
-}
-
-// ========== שמירת העדפות ==========
-function savePreferences() {
-  if (isMobileDevice()) return;
-  
-  try {
-    const preferences = {
-      volume: volume,
-      isMuted: isMuted,
-      defaultTime: defaultTime,
-      currentProgram: currentProgram.map(ex => ({...ex})),
-      exercises: exercises.map(ex => ({...ex})),
-      stopwatchTime: stopwatchTime,
-      stopwatchRunning: stopwatchRunning
-    };
-    
-    localStorage.setItem('exerciseTimerPrefs', JSON.stringify(preferences));
-  } catch (e) {
-    console.log('לא ניתן לשמור העדפות במצב מקומי');
-  }
-}
-
-function loadPreferences() {
-  if (isMobileDevice()) return;
-  
-  try {
-    const savedPrefs = localStorage.getItem('exerciseTimerPrefs');
-    if (!savedPrefs) return;
-
-    const prefs = JSON.parse(savedPrefs);
-    
-    if (prefs.volume !== undefined) volume = prefs.volume;
-    if (prefs.isMuted !== undefined) isMuted = prefs.isMuted;
-    if (prefs.defaultTime !== undefined) {
-      defaultTime = prefs.defaultTime;
-      defaultTimeInput.value = defaultTime;
-    }
-    
-    if (prefs.exercises) {
-      exercises = prefs.exercises;
-      setTimeout(buildExerciseList, 100);
-    }
-    
-    if (prefs.currentProgram) {
-      currentProgram = prefs.currentProgram;
-      setTimeout(updateSelectedProgram, 100);
-    }
-    
-    if (prefs.stopwatchTime !== undefined) {
-      stopwatchTime = prefs.stopwatchTime;
-      updateStopwatchDisplay();
-    }
-    
-    if (prefs.stopwatchRunning) {
-      setTimeout(startStopwatch, 100);
-    }
-  } catch (e) {
-    console.log('לא ניתן לטעון העדפות במצב מקומי');
-  }
-}
-
-// ========== הפעלה ראשונית ==========
-const isLocalFile = window.location.protocol === 'file:';
-
-if (!isLocalFile || (isLocalFile && localStorage)) {
-  loadPreferences();
-}
-
-if (isMobileDevice()) {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') fullStop();
-    else if (!wakeLock) acquireWakeLock();
-  });
-  window.addEventListener('pagehide', fullStop);
-} else if (!isLocalFile) {
-  window.addEventListener('beforeunload', savePreferences);
-}
-
-// הקוד המקורי שלך
-updateVolumeIcons();
-updateTimer();
-</script>
+    updateVolumeIcons();
+    updateTimer();
+  </script>
 </body>
 </html>
