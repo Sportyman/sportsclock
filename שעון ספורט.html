@@ -1,23 +1,387 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl"> <!-- יישור טקסט מימין לשמאל -->
 <head>
-  <!-- כל ה-style הקיים נשאר כמו שהוא -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercise Timer</title>
   <style>
-    /* ... כל הקוד הקיים ב-style נשאר ללא שינוי ... */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.5s ease;
+    }
+
+    #mainContainer {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-bottom: 120px;
+      box-sizing: border-box;
+    }
+
+    #timer {
+      font-size: 50vmin;
+      font-weight: bold;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      transition: transform 0.5s ease;
+    }
+
+    #repetitionStatus {
+      font-size: 2rem;
+      margin-top: 10px;
+    }
+
+    #stopwatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      font-size: 2rem;
+    }
+
+    #stopwatchControls {
+      margin-top: 10px;
+    }
+
+    #stopwatchControls button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    #stopwatchControls button:active {
+      background-color: rgba(255,255,255,0.2);
+      transform: scale(0.98);
+    }
+
+    #stopwatchControls button:focus {
+      outline: none;
+    }
+
+    #bottomControls {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      margin: 0 20px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between; /* הכפתור והתיבה מפוזרים משני הצדדים */
+      align-items: center;
+    }
+
+    #defaultTimeInput {
+      margin-right: auto; /* דוחף את התיבה לצד שמאל */
+    }
+
+    #defaultTimeInput {
+      background-color: white;
+      color: black;
+      border: none;
+      padding: 5px;
+      font-size: 16px;
+      border-radius: 4px;
+      width: 50px;
+      text-align: center;
+    }
+
+    #mobileVolumeBtn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      box-shadow: 0 0 5px rgba(255,255,255,0.4);
+      transition: box-shadow 0.3s ease;
+    }
+    #mobileVolumeBtn:hover {
+      box-shadow: 0 0 10px rgba(255,255,255,0.6);
+    }
+    #mobileVolumeBtn.unmuted::before {
+      content: '🔊';
+    }
+    #mobileVolumeBtn.muted::before {
+      content: '🔇';
+    }
+
+    @media (min-width: 600px) {
+      #mobileVolumeBtn {
+        display: none;
+      }
+    }
+
+    #volumeControl {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0.8;
+      pointer-events: auto;
+      transition: 0.3s ease;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    #volumeBar {
+      writing-mode: bt-lr;
+      -webkit-appearance: slider-vertical;
+      appearance: slider-vertical;
+      width: 8px;
+      height: 120px; 
+      background-color: rgba(255, 255, 255, 0.7);
+      outline: none;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    #muteBtn {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: white;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    #muteBtn:hover {
+      background-color: rgba(255,255,255,0.3);
+    }
+    #muteBtn.unmuted::before {
+      content: '🔊';
+    }
+    #muteBtn.muted::before {
+      content: '🔇';
+    }
+
+    .stealth-mode {
+      background-color: black !important;
+      color: black !important;
+      transition: none !important;
+    }
+    .stealth-mode * {
+      display: none !important;
+    }
+
+    #exercisePanel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100vh;
+      background: rgba(0,0,0,0.95);
+      padding: 20px;
+      border-left: 1px solid #444;
+      overflow-y: auto;
+      z-index: 1000;
+      color: white;
+      display: none;
+      transition: opacity 0.3s ease;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    #exercisePanel.visible {
+      display: block;
+    }
+
+    .exercise-item {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    .exercise-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .exercise-item.selected {
+      background: #0066cc;
+      border-color: #0052a3;
+    }
+
+    #startProgram {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background: #00cc66;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+
+    #startProgram.stop {
+      background: #cc0000;
+    }
+
+    .current-status {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    .exercise-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px; /* מרווח בין התיבות */
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* יישור הכותרות והתיבות למרכז */
+    }
+
+    .input-group label {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      color: #ccc;
+      text-align: center; /* יישור הטקסט במרכז */
+    }
+
+    .input-group input {
+      text-align: right; /* יישור הטקסט בתיבה מימין */
+    }
+
+    .separator {
+      font-size: 1.2rem;
+      margin: 0 10px;
+      color: #ccc;
+    }
+
+    .exercise-controls input {
+      width: 50px;
+      margin: 5px;
+      padding: 5px;
+      border: none;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      #exercisePanel {
+        width: 100%;
+        height: 50vh;
+        bottom: 0;
+        top: unset;
+      }
+    }
+
+    #addExerciseModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 1001;
+      text-align: right; /* יישור טקסט מימין לשמאל */
+    }
+
+    #addExerciseModal input, #addExerciseModal textarea {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .rest-time-applied {
+      animation: restTimeApplied 0.5s ease;
+    }
+
+    @keyframes restTimeApplied {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes countdownAnimation {
+  0% { transform: scale(1); } /* גודל רגיל */
+  100% { transform: scale(1.2); } /* זום פנימה */
+}
   </style>
 </head>
 <body>
-  <!-- כל ה-HTML הקיים נשאר כמו שהוא -->
-  <div id="exercisePanel">...</div>
-  <div id="mainContainer">...</div>
-  <div id="volumeControl">...</div>
-  <div id="bottomControls">...</div>
-  <div id="addExerciseModal">...</div>
+  <div id="exercisePanel">
+    <div class="exercise-list">
+      <h3>תרגילים מומלצים:</h3>
+
+      <button id="addExerciseBtn">➕ הוסף תרגיל</button>
+      <div id="exerciseContainer"></div>
+      <button id="startProgram">התחל תוכנית אימון</button>
+    </div>
+    
+    <div class="current-status">
+      <h4>סטטוס נוכחי:</h4>
+      <div id="currentExercise">לא פעיל</div>
+      <div id="currentRep"></div>
+      <div id="selectedExercisesStatus">נבחרו 0 תרגילים</div>
+      <div id="selectedExercisesList"></div>
+    </div>
+  </div>
+
+  <div id="mainContainer">
+    <div id="timer">30</div>
+    <div id="repetitionStatus"></div>
+
+    <div id="stopwatch">
+      <div id="stopwatchDisplay">00:00:00</div>
+      <div id="stopwatchControls">
+        <button id="startStopwatch">START</button>
+        <button id="resetStopwatch">RESET</button>
+        <button id="pauseMainTimer">PAUSE TIMER</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="volumeControl">
+    <input id="volumeBar" type="range" min="0" max="1" step="0.01" value="1">
+    <button id="muteBtn" class="unmuted"></button>
+  </div>
+
+  <div id="bottomControls">
+    <input id="defaultTimeInput" type="number" min="1" placeholder="30">
+    <button id="mobileVolumeBtn" class="unmuted"></button>
+  </div>
+
+  <div id="addExerciseModal">
+    <h3>הוסף תרגיל חדש</h3>
+    <input type="text" id="newExerciseName" placeholder="שם התרגיל">
+    <input type="number" id="newExerciseDuration" placeholder="משך (שניות)">
+    <input type="number" id="newExerciseReps" placeholder="חזרות">
+    <input type="number" id="newExerciseRest" placeholder="זמן מנוחה (שניות)">
+    <textarea id="newExerciseDescription" placeholder="תיאור התרגיל"></textarea>
+    <button id="saveExerciseBtn">שמור תרגיל</button>
+    <button id="closeModalBtn">סגור</button>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <script>
-    // ---------- תחילת השינויים ----------
-    // Wake Lock API - מניעת כיבוי מסך
+      // ---------- Wake Lock API ועצירת פעילות ----------
     let wakeLock = null;
     let wakeLockTimeout = null;
     
@@ -27,7 +391,6 @@
           wakeLock = await navigator.wakeLock.request('screen');
           console.log('Screen Wake Lock enabled');
           
-          // שחרור אוטומטי אחרי 60 דקות
           wakeLockTimeout = setTimeout(() => {
             if (wakeLock) {
               wakeLock.release();
@@ -40,62 +403,27 @@
       }
     }
 
-    // עצירת כל הפעילות כאשר הדף נסגר
     function fullStop() {
-      // עצירת טיימרים
       clearInterval(timerTimeoutId);
       clearInterval(stopwatchInterval);
       clearInterval(countdownInterval);
       
-      // עצירת צלילים
       const allAudio = document.querySelectorAll('audio');
       allAudio.forEach(audio => {
         audio.pause();
         audio.currentTime = 0;
       });
       
-      // איפוס מצבים
       isProgramRunning = false;
       timerPaused = true;
       stopwatchRunning = false;
       
-      // שחרור Wake Lock
       if (wakeLock) {
         wakeLock.release();
         wakeLock = null;
       }
       clearTimeout(wakeLockTimeout);
     }
-
-    // ---------- סוף השינויים ----------
-
-    // המשך הקוד הקיים
-    const timerElement = document.getElementById('timer');            
-    const defaultTimeInput = document.getElementById('defaultTimeInput');
-    // ... כל שאר ההגדרות והפונקציות הקיימות נשארות ללא שינוי ...
-
-    // קריאה לפונקציות חדשות עם טעינת הדף
-    acquireWakeLock(); // הפעלת Wake Lock
-    
-    // אירועים לסגירת הדף
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        fullStop();
-      } else if (document.visibilityState === 'visible' && !wakeLock) {
-        acquireWakeLock();
-      }
-    });
-
-    window.addEventListener('pagehide', fullStop);
-    window.addEventListener('beforeunload', fullStop);
-    window.addEventListener('unload', fullStop);
-    window.addEventListener('blur', () => {
-      if (!document.hidden) return;
-      fullStop();
-    });
-
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-  <script>
     const timerElement = document.getElementById('timer');            
     const defaultTimeInput = document.getElementById('defaultTimeInput');
     const volumeControl = document.getElementById('volumeControl');
@@ -694,8 +1022,29 @@ let countdownInterval = null; // משתנה שישמור את ה-interval של �
       }
     }
 	
-	
+ // ========== הוסף כאן את הקוד החדש ==========
+    
+    // הפעלת Wake Lock עם טעינת הדף
+    acquireWakeLock();
+    
+    // אירועים לסגירת הדף
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        fullStop();
+      } else if (document.visibilityState === 'visible' && !wakeLock) {
+        acquireWakeLock();
+      }
+    });
 
+    window.addEventListener('pagehide', fullStop);
+    window.addEventListener('beforeunload', fullStop);
+    window.addEventListener('unload', fullStop);
+    window.addEventListener('blur', () => {
+      if (!document.hidden) return;
+      fullStop();
+    });
+
+    // ========== סוף הקוד החדש ==========
     updateVolumeIcons();
     updateTimer();
   </script>
